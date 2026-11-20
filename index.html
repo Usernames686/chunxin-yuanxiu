@@ -1,0 +1,3063 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <meta name="theme-color" content="#0A0D12" />
+    <title>春信·远岫</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      :root {
+        color-scheme: dark;
+        --paper: #0a0d12;
+        --type: #e9dfc8;
+        --muted: #a6aea9;
+        --rule: #dad6bf35;
+        --seal: #bc6452;
+        --active: #e7cb8b;
+      }
+      :root.silk {
+        color-scheme: light;
+        --paper: #eae4d7;
+        --type: #292e2a;
+        --muted: #555e56;
+        --rule: #444b403d;
+        --seal: #a14d3a;
+        --active: #684c27;
+      }
+      html,
+      body,
+      main {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+      body {
+        background: var(--paper);
+        color: var(--type);
+        font-family: 'Songti SC', 'STSong', 'Noto Serif CJK SC', 'Noto Serif SC', 'SimSun', serif;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+      main {
+        position: relative;
+        isolation: isolate;
+      }
+      canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        touch-action: none;
+        cursor: grab;
+        outline: none;
+      }
+      .inscription {
+        -webkit-mask-image: var(--ink-impression);
+        mask-image: var(--ink-impression);
+        -webkit-mask-size: 73px 73px;
+        mask-size: 73px 73px;
+      }
+      main::after {
+        content: '';
+        position: fixed;
+        inset: 0;
+        z-index: 5;
+        pointer-events: none;
+        background:
+          radial-gradient(
+            ellipse at 48% 48%,
+            rgba(27, 24, 37, 0) 37%,
+            rgba(27, 24, 37, 0.032) 78%,
+            rgba(27, 24, 37, 0.13) 115%
+          ),
+          linear-gradient(
+            161deg,
+            rgba(209, 188, 156, 0.019),
+            rgba(169, 184, 167, 0.006) 50%,
+            rgba(84, 94, 116, 0.031)
+          );
+      }
+      canvas.grabbed {
+        cursor: grabbing;
+      }
+      canvas:focus-visible {
+        outline: 1px solid var(--active);
+        outline-offset: -4px;
+      }
+      .inscription {
+        position: fixed;
+        transform-origin: top left;
+        left: max(env(safe-area-inset-left), clamp(24px, 4.8vw, 86px));
+        top: max(env(safe-area-inset-top), min(5.7vh, 66px));
+        display: grid;
+        justify-items: center;
+        pointer-events: none;
+      }
+      h1 {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.07em;
+        margin: 0;
+        font-family: 'Kaiti SC', 'STKaiti', 'KaiTi', 'Songti SC', 'Noto Serif CJK SC', 'SimSun', serif;
+        font-weight: 500;
+        font-size: min(5.05vh, 4.2vw, 53px);
+        line-height: 1.02;
+        color: var(--type);
+        transition: color 0.78s;
+      }
+      h1 i {
+        display: block;
+        width: 0.084em;
+        height: 0.084em;
+        border-radius: 50%;
+        margin: 0.105em 0 0.14em;
+        background: currentColor;
+        opacity: 0.76;
+      }
+      .seal {
+        width: min(2.75vh, 24px);
+        height: auto;
+        margin-top: min(1.35vh, 14px);
+        color: var(--seal);
+        transform: rotate(-3deg);
+        transition: color 0.78s;
+      }
+      footer {
+        position: fixed;
+        bottom: max(10px, env(safe-area-inset-bottom));
+        left: max(clamp(20px, 4.8vw, 86px), env(safe-area-inset-left));
+        right: max(clamp(20px, 4.8vw, 86px), env(safe-area-inset-right));
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: clamp(12px, 1.7vw, 28px);
+        pointer-events: none;
+      }
+      footer::before {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--rule);
+        transition: background 0.78s;
+      }
+      button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.65em;
+        min-height: 44px;
+        padding: 0 3px;
+        border: 0;
+        background: transparent;
+        color: var(--type);
+        font:
+          500 14px/1.4 'Songti SC',
+          'STSong',
+          'Noto Serif CJK SC',
+          'SimSun',
+          serif;
+        letter-spacing: 0.11em;
+        cursor: pointer;
+        pointer-events: auto;
+        -webkit-tap-highlight-color: transparent;
+        transition: color 0.78s;
+      }
+      button:focus-visible {
+        outline: 1px solid var(--active);
+        outline-offset: 2px;
+        border-radius: 2px;
+      }
+      button svg {
+        width: 18px;
+        height: 18px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      #theme {
+        gap: 0.55em;
+      }
+      #theme .names {
+        display: flex;
+        align-items: center;
+        gap: 0.46em;
+      }
+      #theme b {
+        font-weight: 500;
+        color: var(--muted);
+        transition: color 0.78s;
+      }
+      #theme .selected,
+      button:hover,
+      #bloom.lit {
+        color: var(--active);
+      }
+      #theme em {
+        font-style: normal;
+        opacity: 0.42;
+        font-size: 12px;
+      }
+      .sr {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+        border: 0;
+      }
+      @media (max-width: 600px) {
+        .inscription {
+          left: 6.3vw;
+          top: max(5.6vh, env(safe-area-inset-top));
+        }
+        h1 {
+          font-size: min(5.05vh, 8.8vw, 42px);
+        }
+        footer {
+          gap: 17px;
+        }
+        button {
+          font-size: 13px;
+        }
+      }
+      @media (max-height: 470px) {
+        .inscription {
+          top: 4.6vh;
+        }
+        h1 {
+          font-size: min(5.05vh, 26px);
+          gap: 0.03em;
+        }
+        .seal {
+          width: min(3vh, 17px);
+          margin-top: 1.1vh;
+        }
+        footer {
+          bottom: 1px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before {
+          transition-duration: 0.12s !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main aria-labelledby="work">
+      <canvas id="scroll" tabindex="0" aria-label="交互山水长卷" aria-describedby="guide">
+        春山延绵，彩墨峰影映在江中。
+      </canvas>
+      <div class="inscription">
+        <h1 id="work" aria-label="春信·远岫">
+          <span aria-hidden="true">春</span>
+          <span aria-hidden="true">信</span>
+          <i aria-hidden="true"></i>
+          <span aria-hidden="true">远</span>
+          <span aria-hidden="true">岫</span>
+        </h1>
+        <svg class="seal" viewBox="0 0 27 35" aria-hidden="true">
+          <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke-width="1.5" d="M2.7 2.2 24 1.6q1 .1.9 2l-.4 28.7-21.8.6-.8-26.7z" />
+            <path
+              stroke-width="1.35"
+              d="m6.5 6.1 13.7-.3M7.9 8.8l10.9-.3M5.9 11.4l15.2-.3M13 4.8c-.1 4.5-2.8 7.5-7.1 9.2m7.8-4.3c1.8 1.9 4.1 3.1 7.5 3.9M9.1 13.2l8.5-.2-.2 4.8-8.4.2zm.3 2.4 7.7-.2M9.7 20.4l-3.6 4.7m2.2-2.7-.2 7.2M15 20l.6 1.5m-4.6.8 10-.2m-8.2 2.3 6.3-.2m-6.4 2 6.3-.1m-6.8 2 7.6-.1-.2 2.7-7.3.2z"
+            />
+          </g>
+        </svg>
+      </div>
+      <footer aria-label="画卷控制">
+        <button id="theme" type="button" aria-label="素绢·明春" aria-pressed="false" title="切换玄墨与素绢">
+          <svg viewBox="0 0 22 22" aria-hidden="true">
+            <circle cx="11" cy="11" r="7.5" />
+            <path fill="currentColor" stroke="none" d="M11 3.5a7.5 7.5 0 0 0 0 15z" />
+          </svg>
+          <span class="names" aria-hidden="true">
+            <b class="selected">玄墨</b>
+            <em>/</em>
+            <b>素绢</b>
+          </span>
+        </button>
+        <button id="bloom" type="button" title="沿山脊释放流彩" aria-label="山势流彩">
+          <svg viewBox="0 0 22 22" aria-hidden="true">
+            <path
+              d="M2.3 14.7c3.5-.5 4.2-6.6 7-6.1 1.4.3 1.7 2.1 2.9 1.6 1.7-.7 2.6-6.6 4.4-6.1 1.1.4.4 4.3 3.3 5.3M3.7 17.2c4.9-2.2 8.5 1.8 14.8-.5"
+            />
+          </svg>
+          <span>流彩</span>
+        </button>
+      </footer>
+      <p id="guide" class="sr">
+        横向拖动画卷，或滚动滚轮漫游。拂过山脊或江面，点按任意位置激发流彩。键盘左右方向键漫游，空格或回车触发流彩。
+      </p>
+    </main>
+    <script>
+      (() => {
+        'use strict';
+        let canvas = document.querySelector('#scroll');
+        const themeButton = document.querySelector('#theme');
+        const bloomButton = document.querySelector('#bloom');
+        const signature = document.querySelector('.inscription');
+        const clock = () => performance.now() / 1000;
+        const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+        const TAU = 2 * Math.PI,
+          PERIOD = 2400,
+          FOCUS = 1260,
+          CEILING = 352;
+        const N = 2048,
+          Z = 144,
+          FIELD_H = 288,
+          PEN_W = 4096,
+          PEN_H = 640,
+          DEPTH = 296;
+        const mod = (x, n) => x - n * Math.floor(x / n);
+        const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+        const mix = (a, b, t) => a + (b - a) * t;
+        const smooth = (t) => {
+          t = clamp(t);
+          return t * t * (3 - 2 * t);
+        };
+        const fold = (x, c) => mod(x - c + PERIOD / 2, PERIOD) - PERIOD / 2;
+        function random(seed) {
+          return () => {
+            seed = (Math.imul(1664525, seed) + 1013904223) >>> 0;
+            return seed / 4294967296;
+          };
+        }
+        const rng = random(768413),
+          lattice = Float32Array.from({ length: 65536 }, rng);
+        function noise(x, y, period, seed) {
+          const a = x * period,
+            i = Math.floor(a),
+            j = Math.floor(y),
+            u = smooth(a - i),
+            v = smooth(y - j);
+          const ix = mod(i, period),
+            lo = (ix + seed) & 255,
+            hi = ((ix + 1 === period ? 0 : ix + 1) + seed) & 255;
+          const row = ((j + seed * 13) & 255) << 8,
+            next = ((j + 1 + seed * 13) & 255) << 8;
+          return mix(
+            mix(lattice[row + lo], lattice[row + hi], u),
+            mix(lattice[next + lo], lattice[next + hi], u),
+            v
+          );
+        }
+        // 织物母版与绘画缓存均使用独立的二维画布。经纬、吃色能力和矿物细砂各占一个通道。
+        function offscreen(w, h, read = false) {
+          const c =
+            typeof OffscreenCanvas === 'function' ? new OffscreenCanvas(w, h) : document.createElement('canvas');
+          c.width = w;
+          c.height = h;
+          return { c, g: c.getContext('2d', { willReadFrequently: read }) };
+        }
+        const PAINT_W = (window.devicePixelRatio > 1.4 && innerWidth >= 720 ? 6144 : 4096) - 2;
+        const LOOM = 1024;
+        function wovenSilk() {
+          const im = new ImageData(LOOM, LOOM);
+          const surfaces = [offscreen(LOOM, LOOM), offscreen(LOOM, LOOM)];
+          const impressions = surfaces.map((s) => s.g.createImageData(LOOM, LOOM));
+          const rand = random(307241);
+          // 两轴都闭合，卷轴任意接缝处的经纬不会错一根线。
+          function yarnNoise(x, y, nx, ny, seed) {
+            const u = x * nx,
+              v = y * ny,
+              a = Math.floor(u),
+              b = Math.floor(v),
+              dx = smooth(u - a),
+              dy = smooth(v - b);
+            const at = (i, j) => lattice[(mod(j, ny) * 127 + seed * 431 + mod(i, nx) * 331) & 65535];
+            return mix(mix(at(a, b), at(a + 1, b), dx), mix(at(a, b + 1), at(a + 1, b + 1), dx), dy);
+          }
+          const len = LOOM * LOOM,
+            height = new Float32Array(len),
+            absorb = new Float32Array(len),
+            grit = new Float32Array(len);
+          const clusters = new Uint8Array(len);
+          for (let y = 0; y < LOOM; y++)
+            for (let x = 0; x < LOOM; x++) {
+              const u = x / LOOM,
+                v = y / LOOM,
+                i = y * LOOM + x;
+              const slubX = yarnNoise(u, v, 47, 6, 17),
+                slubY = yarnNoise(u, v, 6, 53, 77);
+              const warp = u * 184 + 1.24 * (yarnNoise(u, v, 11, 8, 103) - 0.5) + 0.31 * (slubX - 0.5);
+              const weft = v * 214 + 1.13 * (yarnNoise(u, v, 7, 14, 44) - 0.5) + 0.39 * (slubY - 0.5);
+              const a = Math.floor(warp),
+                b = Math.floor(weft),
+                s = warp - a,
+                t = weft - b;
+              const xt = Math.sin(s * Math.PI) ** (1.7 - 0.72 * slubX),
+                yt = Math.sin(t * Math.PI) ** (1.58 - 0.7 * slubY);
+              const over = ((a + b) & 1) === 0,
+                front = over ? xt : yt,
+                rear = over ? yt : xt;
+              const grain = rand(),
+                twist = 0.065 * Math.sin(TAU * (over ? t * 1.03 + s * 2.08 : s * 1.01 - t * 2.1));
+              height[i] = 0.78 * front + 0.26 * rear * (1 - front) + twist + 0.12 * (slubX + 0.7 * slubY - 0.85);
+              absorb[i] = clamp(
+                0.23 + 0.64 * (1 - front) + 0.18 * (1 - rear) + 0.19 * (grain - 0.5) + 0.13 * (slubX - slubY)
+              );
+              const gritPatch = yarnNoise(u, v, 117, 97, 62),
+                slurry = yarnNoise(u, v, 14, 11, 18);
+              grit[i] = clamp(0.54 * grain + 0.32 * gritPatch + 0.14 * slurry);
+              // 一到十余像素的颜料絮团与单根经纬分开取样，絮团的毛边来自浆液的横向渗流。
+              const fleck = yarnNoise(u + 0.011 * (slurry - 0.5), v + 0.012 * (slubY - 0.5), 64, 47, 31);
+              clusters[i] =
+                255 *
+                clamp(
+                  0.5 +
+                    0.67 * (fleck - 0.5) +
+                    0.55 * (gritPatch - 0.5) +
+                    0.38 * (slurry - 0.5) +
+                    0.14 * (grain - 0.5)
+                );
+            }
+          for (let y = 0; y < LOOM; y++)
+            for (let x = 0; x < LOOM; x++) {
+              const i = y * LOOM + x,
+                o = i * 4,
+                ix = (x - 1) & (LOOM - 1),
+                iy = (y - 1) & (LOOM - 1);
+              const relief = clamp(
+                0.49 +
+                  0.42 * (height[i] - 0.57) +
+                  0.37 * (height[i] - height[y * LOOM + ix]) +
+                  0.21 * (height[i] - height[iy * LOOM + x]) +
+                  0.13 * (grit[i] - 0.5)
+              );
+              im.data[o] = relief * 255;
+              im.data[o + 1] = absorb[i] * 255;
+              im.data[o + 2] = grit[i] * 255;
+              im.data[o + 3] = 255;
+              const dark = impressions[0].data,
+                light = impressions[1].data;
+              for (let ch = 0; ch < 3; ch++) {
+                dark[o + ch] = clamp(127 + (relief - 0.49) * 187 + (grit[i] - 0.5) * 45 + [2, 0, 3][ch], 22, 227);
+                light[o + ch] = clamp(
+                  [247, 244, 235][ch] + (relief - 0.68) * 55 - absorb[i] * 9 + (grit[i] - 0.5) * 16,
+                  182,
+                  252
+                );
+              }
+              dark[o + 3] = light[o + 3] = 255;
+            }
+          surfaces.forEach((s, i) => s.g.putImageData(impressions[i], 0, 0));
+          return { data: im.data, clusters, ink: surfaces.map((s) => s.c) };
+        }
+        const cloth = wovenSilk();
+        // 同一组织纹控制干笔和印泥在绢面上的断续。此小蒙版只用于题跋和印章。
+        function setInscriptionGrain() {
+          const c = document.createElement('canvas');
+          c.width = c.height = 192;
+          const g = c.getContext('2d'),
+            im = g.createImageData(c.width, c.height);
+          for (let i = 0; i < im.data.length; i += 4) {
+            const x = (i >> 2) % 192,
+              y = Math.floor((i >> 2) / 192),
+              s = ((y + 119) * LOOM + x + 317) * 4;
+            const tooth = cloth.data[s + 1] / 255,
+              rock = cloth.data[s + 2] / 255;
+            im.data[i] = 196;
+            im.data[i + 1] = 177;
+            im.data[i + 2] = 142;
+            im.data[i + 3] = Math.round(
+              255 * clamp(0.988 - 0.075 * tooth - 0.48 * smooth((tooth + rock * 0.32 - 0.925) / 0.24))
+            );
+          }
+          g.putImageData(im, 0, 0);
+          document.documentElement.style.setProperty('--ink-impression', 'url(' + c.toDataURL('image/png') + ')');
+        }
+        setInscriptionGrain();
+        function fbm(x, y, period, seed) {
+          let total = 0,
+            weight = 0.556;
+          for (let j = 0; j < 4; j++) {
+            total += weight * noise(x, y, period, seed + j * 39);
+            weight *= 0.48;
+            period *= 2;
+            y = y * 2 + 0.893;
+          }
+          return total;
+        }
+        const washSpecs = [
+          { pigment: '赭黄薄底', opacity: 0.16, rim: 0.056, width: 0.84 },
+          { pigment: '石绿', opacity: 0.24, rim: 0.083, width: 0.92 },
+          { pigment: '胭脂', opacity: 0.23, rim: 0.092, width: 0.77 },
+          { pigment: '藤黄', opacity: 0.19, rim: 0.067, width: 0.73 },
+          { pigment: '月白', opacity: 0.21, rim: 0.054, width: 0.79 },
+          { pigment: '花青回染', opacity: 0.17, rim: 0.079, width: 0.86 }
+        ];
+
+        // 脊状多重分形。上一层的脊强控制下一层的权重，横向所有倍频均闭合。
+        function ridged(x, y, frequency, seed, octaves = 5) {
+          let sum = 0,
+            amp = 0.55,
+            weight = 1;
+          for (let i = 0; i < octaves; i++) {
+            const ridge = 1 - Math.abs(noise(x, y, frequency, seed + i * 17) * 2 - 1);
+            const signal = ridge * ridge * weight;
+            sum += signal * amp;
+            weight = clamp(signal * 1.85 + 0.13);
+            amp *= 0.5;
+            frequency *= 2;
+            y = y * 2.04 + 3.7;
+          }
+          return sum;
+        }
+        const knots = (text) =>
+          text
+            .trim()
+            .split(/\s+/)
+            .map((pair) => pair.split(',').map(Number));
+        // 非等距三次 Hermite 曲线，极值处收平，跨卷首尾共用切向。
+        function profileCurve(text) {
+          const points = knots(text),
+            last = points.length - 1;
+          const slope = points.map(([x, y], i) => {
+            const a =
+              i === 0 || i === last
+                ? [points[last - 1][0] - (i === 0 ? PERIOD : 0), points[last - 1][1]]
+                : points[i - 1];
+            const b =
+              i === last || i === 0 ? [points[1][0] + (i === last ? PERIOD : 0), points[1][1]] : points[i + 1];
+            const l = (y - a[1]) / (x - a[0]),
+              r = (b[1] - y) / (b[0] - x);
+            return l * r > 0 ? (2 * l * r) / (l + r) : 0;
+          });
+          return (x) => {
+            x = mod(x, PERIOD);
+            let l = 0,
+              h = last;
+            while (h - l > 1) {
+              const i = (h + l) >> 1;
+              if (points[i][0] <= x) l = i;
+              else h = i;
+            }
+            const [x0, y0] = points[l],
+              [x1, y1] = points[h],
+              dx = x1 - x0,
+              t = (x - x0) / dx;
+            return mix(y0, y1, t * t * (3 - 2 * t)) + dx * t * (1 - t) * (slope[l] * (1 - t) - slope[h] * t);
+          };
+        }
+        const curves = [
+          profileCurve(
+            '0,112 84,148 157,139 230,193 259,190 292,205 345,182 408,198 486,147 549,162 623,112 682,122 749,92 795,109 842,137 895,134 975,174 1033,156 1126,202 1190,190 1276,222 1358,213 1413,248 1456,242 1502,257 1547,225 1614,233 1693,180 1764,192 1832,142 1911,158 2012,134 2110,196 2181,182 2256,144 2318,157 2400,112'
+          ),
+          profileCurve(
+            '0,101 86,124 151,160 198,153 244,191 278,187 315,201 356,184 408,165 454,173 510,139 567,120 614,124 679,83 737,69 788,80 853,92 918,131 955,168 994,165 1029,197 1060,201 1101,230 1154,225 1189,248 1213,249 1246,279 1270,291 1288,299 1310,297 1326,299 1351,271 1376,260 1425,273 1458,262 1503,221 1555,208 1608,193 1662,203 1710,171 1790,143 1872,151 1942,117 2023,150 2090,207 2136,209 2172,192 2240,163 2314,102 2400,101'
+          ),
+          profileCurve(
+            '0,31 93,62 156,60 233,96 272,91 336,113 382,103 444,110 493,88 554,66 604,72 678,40 727,35 797,20 858,22 923,37 977,36 1054,55 1134,42 1198,26 1253,30 1325,44 1371,64 1422,60 1492,86 1529,86 1595,101 1670,81 1738,86 1814,54 1903,47 1976,24 2052,29 2132,60 2200,53 2262,75 2325,55 2400,31'
+          )
+        ];
+        const roots = [
+          [55, 232, 341, 420, 596, 803, 993, 1140, 1286, 1448, 1515, 1722, 1900, 2128, 2285],
+          [
+            130, 244, 320, 449, 584, 789, 917, 965, 1042, 1115, 1199, 1284, 1334, 1427, 1509, 1649, 1850, 2031,
+            2122, 2256
+          ],
+          [97, 239, 333, 444, 607, 729, 929, 1050, 1180, 1370, 1503, 1597, 1721, 1855, 2053, 2260]
+        ];
+        const rates = [0.4, 0.6, 0.8];
+        function ridgeSample(a, x) {
+          const u = (mod(x, PERIOD) * N) / PERIOD,
+            i = Math.floor(u);
+          return mix(a[i], a[(i + 1) & (N - 1)], u - i);
+        }
+        function texel(array, x, t) {
+          const u = (mod(x, PERIOD) * N) / PERIOD,
+            i = Math.floor(u),
+            v = clamp(t) * Z,
+            j = Math.min(Z - 1, Math.floor(v));
+          const next = (i + 1) & (N - 1),
+            row = j * N;
+          return mix(
+            mix(array[row + i], array[row + next], u - i),
+            mix(array[row + N + i], array[row + N + next], u - i),
+            v - j
+          );
+        }
+        function lobe(t, center, front, back) {
+          const a = clamp(1 - Math.abs(t - center) / (t < center ? front : back));
+          return a * a * (3 - 2 * a);
+        }
+        function softMaximum(a, b, radius) {
+          const q = Math.max(radius - Math.abs(a - b), 0) / radius;
+          return Math.max(a, b) + q * q * radius * 0.25;
+        }
+        function branchPosition(b, t) {
+          const f = clamp((b.head - t) / (b.head - b.toe));
+          return b.x + b.lean * f + b.arc * Math.sin(Math.PI * f) + b.bend * Math.sin(TAU * f);
+        }
+        function elevationField(k) {
+          const field = new Float32Array(N * (Z + 1)),
+            back = new Float32Array(N),
+            rand = random(7341 + 127 * k);
+          for (let i = 0; i < N; i++) {
+            const u = i / N,
+              warp = (noise(u, 1.6, 13, 19 + k) - 0.5) * 25;
+            const macro = curves[k](u * PERIOD + warp);
+            back[i] =
+              macro +
+              (ridged(u, 3.2 + k, 29, 71 + k) - 0.44) * (4 + macro * 0.055) +
+              (noise(u, 1, 165, 36 + k) - 0.5) * 2.6;
+          }
+          const branches = roots[k].map((x, i) => ({
+            x,
+            head: 0.72 + 0.15 * rand(),
+            toe: 0.035 + 0.14 * rand(),
+            lean: (i % 4 === 1 ? 1 : -1) * (49 + rand() * 135),
+            arc: (rand() - 0.5) * 85,
+            bend: (rand() - 0.5) * 26,
+            width: 24 + rand() * 30,
+            height: ridgeSample(back, x),
+            bias: 0.66 + rand() * 0.8
+          }));
+          for (let i = 0; i < N; i++) {
+            const u = i / N,
+              x = u * PERIOD,
+              origin = back[i],
+              center = 0.77 + (noise(u, 2, 10, 12 + k) - 0.5) * 0.15;
+            const mid = 0.43 + (noise(u, 2, 13, 40 + k) - 0.5) * 0.17,
+              low = 0.21 + (noise(u, 3, 9, 32 + k) - 0.5) * 0.1;
+            const middleH =
+              ridgeSample(back, x - 93 + 78 * noise(u, 0, 7, 56 + k)) * (0.38 + 0.5 * noise(u, 1, 12, 84 + k));
+            const lowH =
+              ridgeSample(back, x + 105 - 86 * noise(u, 1, 5, 86 + k)) * (0.14 + 0.34 * noise(u, 1, 14, 31 + k));
+            for (let z = 0; z <= Z; z++) {
+              const t = z / Z;
+              const main = origin * lobe(t, center, center + 0.015, 0.43);
+              const middle = middleH * lobe(t, mid, mid + 0.012, 0.19);
+              const near = lowH * lobe(t, low, low + 0.007, 0.12);
+              const mass = softMaximum(softMaximum(main, middle, 5.3), near, 3.4);
+              const warp = (noise(u, t * 3.2, 15, 14 + k) - 0.5) * 0.01;
+              const r = ridged(u + warp, t * 5.2, 33, 82 + k, 4);
+              const bedding = noise(u + warp + t * 0.013, t * 20, 81, 113 + k);
+              field[z * N + i] = Math.max(
+                0,
+                mass + (r - 0.46) * (4 + origin * 0.1) * Math.sin(t * Math.PI * 0.95) + (bedding - 0.5) * 4.8 * t
+              );
+            }
+          }
+          // 余脉从主脊斜出，山趾逐渐展宽。所有高度在同一连续标量场内合并。
+          for (const b of branches)
+            for (let z = Math.floor(b.toe * Z) + 1; z <= Math.ceil(b.head * Z); z++) {
+              const t = z / Z,
+                f = clamp((t - b.toe) / (b.head - b.toe)),
+                cx = branchPosition(b, t);
+              const width = b.width * (1.64 - 0.72 * f),
+                amp = b.height * (0.1 + 0.9 * f ** 0.82) * smooth(f * 4.4);
+              const radius = width * 1.9,
+                lo = Math.floor(((cx - radius) * N) / PERIOD),
+                hi = Math.ceil(((cx + radius) * N) / PERIOD);
+              for (let col = lo; col <= hi; col++) {
+                const i = mod(col, N),
+                  distance = ((col * PERIOD) / N - cx) / width,
+                  side = distance < 0 ? b.bias : 1 / b.bias;
+                const v = Math.max(0, 1 - (Math.abs(distance) * side) / 1.82);
+                const h = amp * v * v * (3 - 2 * v);
+                const idx = z * N + i;
+                field[idx] = softMaximum(field[idx], h, 3.5);
+              }
+            }
+          // 连通余脉之后再刻蚀。支沟随纵深弯转，并在山麓分叉，保留连续的曲面法线。
+          for (let z = 0; z <= Z; z++)
+            for (let i = 0; i < N; i++) {
+              const u = i / N,
+                t = z / Z,
+                j = z * N + i,
+                h = field[j];
+              const warp =
+                u +
+                (noise(u, t * 2.7, 6, 26 + k) - 0.5) * 0.036 +
+                t * (0.028 * Math.sin(TAU * u * 2.0 + 0.71 * k) - 0.018);
+              const spine = ridged(warp, t * 2.9 + 1.7, 26, 66 + k, 4);
+              const channels = noise(warp + (noise(warp, t * 4.2, 19, 99 + k) - 0.5) * 0.01, t * 5.5, 42, 73 + k);
+              const gully = 1 - smooth(Math.abs(channels - 0.51) / 0.205);
+              const bed = noise(warp - 0.019 * t, t * 7.7, 81, 38 + k);
+              const power = smooth(h / 56) * (0.48 + 0.52 * Math.sin(t * Math.PI));
+              field[j] = Math.max(
+                0,
+                h + power * ((spine - 0.43) * 20.0 - (gully - 0.22) * 13.2 + (bed - 0.5) * 5.5)
+              );
+            }
+          return { k, field, branches, rate: rates[k] };
+        }
+        const stockColors = [
+          [
+            '#232332',
+            '#52B788',
+            '#74C69D',
+            '#EDEBDC',
+            '#F4D35E',
+            '#FFE17D',
+            '#F26D85',
+            '#FF8FA3',
+            '#0A0D12',
+            '#131B24'
+          ],
+          [
+            '#36323D',
+            '#40916C',
+            '#74C69D',
+            '#F4F0E3',
+            '#E9C46A',
+            '#F4D35E',
+            '#E35D75',
+            '#F598A8',
+            '#EAE4D7',
+            '#DCD3C1'
+          ]
+        ];
+        const palette = stockColors.map((p) =>
+          p.map((c) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16) / 255))
+        );
+        const bell = (distance, width) => Math.exp((-distance * distance) / (width * width));
+        function layersAt(x, d, h, k) {
+          const u = x / PERIOD,
+            band = h / CEILING;
+          const pool = noise(u + d * 0.017, band * 3.7, 12, 45 + k),
+            tide = noise(u - d * 0.012, band * 8.4, 31, 72 + k);
+          const gran = noise(u + d * 0.007, band * 21, 74, 99 + k);
+          const q =
+            x + (d - 0.48) * (k === 1 ? 196 : 115) + 88 * (pool - 0.5) + 31 * Math.sin(band * 6.2 + u * TAU * 3.0);
+          const strata = 0.5 + 0.5 * Math.sin(band * 11.5 + d * 3.6 + u * TAU * 5.0 + 3.1 * (pool - 0.5));
+          const mist = smooth(0.25 + 0.49 * tide + 0.47 * gran + 0.35 * strata - 0.29);
+          const roseMass =
+            0.92 * bell(fold(q, 1213 + 47 * k), 166) +
+            0.71 * bell(fold(q, 336 - 26 * k), 109) +
+            0.79 * bell(fold(q, 2100 - 29 * k), 146) +
+            0.41 * bell(fold(q, 1601), 91);
+          const pink = clamp(
+            roseMass * (0.4 + 0.51 * mist + 0.33 * d) + 0.45 * (pool - 0.5) + 0.32 * (tide - 0.5) - 0.09
+          );
+          const goldMass =
+            0.72 * bell(fold(q, 1142 + 11 * k), 138) +
+            0.67 * bell(fold(q, 1478 + 12 * k), 124) +
+            0.65 * bell(fold(q, 473), 128) +
+            0.53 * bell(fold(q, 1943), 139);
+          const yellow = clamp(goldMass * (0.39 + 0.77 * strata) + 0.32 * (tide - 0.43) + 0.16 * (gran - 0.5));
+          const white = clamp(
+            0.23 +
+              0.44 * pool +
+              0.43 * (tide - 0.37) +
+              0.27 * strata +
+              0.19 * (gran - 0.5) +
+              0.13 * d -
+              0.43 * pink -
+              0.31 * yellow
+          );
+          if (k === 2)
+            return [pink * (0.3 + 0.3 * strata), yellow * 0.66, clamp(white * 0.83 + 0.09), gran, pool, strata];
+          return [pink * (0.73 + 0.27 * smooth((h - 31) / 155)), yellow, white, gran, pool, strata];
+        }
+        // 暖绢先受一遍薄底。底稿给出明暗与大色势，每次罩染再改变吸收与返光。
+        const nightAir = [0.292, 0.352, 0.358],
+          dayAir = [0.671, 0.703, 0.637];
+        function layGround(dst, off, mode, k, p, lighting, occlusion, d, nx, edge) {
+          const sun = smooth((lighting + 0.18) / 1.01),
+            shade = mode ? [0.164, 0.241, 0.252] : [0.091, 0.171, 0.208];
+          const stock = palette[mode],
+            top = mode ? [0.915, 0.899, 0.815] : [0.887, 0.863, 0.773],
+            air = mode ? dayAir : nightAir;
+          const rose = smooth((p[0] - 0.1) / 0.66),
+            gold = smooth((p[1] - 0.19) / 0.66),
+            pale = smooth((p[2] - 0.28) / 0.58);
+          const value = 0.135 + 0.858 * sun;
+          for (let c = 0; c < 3; c++) {
+            const verdigris = mix(stock[1][c], stock[2][c], 0.46 + 0.43 * p[4]);
+            const ochre = mix(stock[4][c], stock[5][c], 0.35 + 0.32 * p[5]);
+            const peach = mix(stock[6][c], stock[7][c], 0.32 + 0.57 * p[4]);
+            const hue = mix(
+              mix(mix(verdigris, stock[3][c], 0.09 + 0.83 * pale), ochre, gold * 0.83),
+              peach,
+              rose * 0.95
+            );
+            const cold = mix(shade[c], [0.297, 0.199, 0.272][c], rose * 0.57);
+            let a = mix(cold, mix(top[c], hue, 0.78), value);
+            a *= 1 - (0.105 + 0.18 * (1 - sun)) * occlusion;
+            a = mix(a, stock[3][c], edge * (0.12 + 0.21 * sun));
+            a = mix(a, air[c], k === 0 ? 0.31 : k === 2 ? 0.075 : 0.034);
+            dst[off + c] = clamp(a) * 255;
+          }
+          dst[off + 3] = Math.round(255 * clamp(mode ? d : nx * 0.5 + 0.5));
+        }
+        function wetMargins(fields, idx, x, h, d, k, p, tone) {
+          const u = x / PERIOD,
+            v = h / CEILING,
+            a = fbm(u + d * 0.018, v * 3.23 + d * 0.41, 9, 139 + k);
+          const b = fbm(u + (a - 0.48) * 0.028, v * 5.34 - d * 0.86, 17, 45 + k);
+          const wx = u + (a - 0.49) * 0.036 + (b - 0.48) * 0.014 + d * 0.007,
+            wy = v + (b - 0.49) * 0.21 + (a - 0.5) * 0.11;
+          const lay = [
+            0.47 + 0.2 * p[1] - 0.08 * tone,
+            0.54 - 0.5 * p[0] - 0.16 * p[1] + 0.13 * (1 - tone),
+            0.1 + 0.83 * p[0],
+            0.13 + 0.72 * p[1] + 0.1 * (p[5] - 0.5),
+            0.11 + 0.65 * p[2] + 0.19 * clamp(tone),
+            0.45 - 0.37 * tone + 0.12 * d
+          ];
+          for (let pass = 0; pass < 6; pass++) {
+            const pigment = fbm(
+              wx + 0.0041 * pass + (b - 0.5) * 0.006,
+              wy * (4.25 + pass * 0.67) + d * (0.43 + pass * 0.17),
+              [17, 26, 19, 23, 37, 30][pass],
+              15 + 29 * pass + k
+            );
+            fields[pass][idx] =
+              lay[pass] - 0.44 + 0.83 * (pigment - 0.475) + 0.29 * (b - 0.5) + 0.13 * (p[3] - 0.5);
+          }
+        }
+        // 接触线的厚度以画面弧长计。带内的浓度只增加 5.4% 至 9.2%，内侧则保留扩散尾迹。
+        function dryWashes(m, fields) {
+          const { sky, stocks, k, tone } = m;
+          const stride = N,
+            dx = PERIOD / N,
+            dy = CEILING / FIELD_H;
+          const absorption = [
+            [0.19, 0.29, 0.4],
+            [0.51, 0.14, 0.29],
+            [0.09, 0.51, 0.36],
+            [0.055, 0.22, 0.58],
+            [0.036, 0.044, 0.074],
+            [0.43, 0.31, 0.22]
+          ];
+          const particles = [
+            [
+              [0.78, 0.673, 0.48],
+              [0.82, 0.719, 0.519]
+            ],
+            [
+              [0.27, 0.677, 0.548],
+              [0.33, 0.678, 0.542]
+            ],
+            [
+              [0.871, 0.426, 0.524],
+              [0.887, 0.438, 0.513]
+            ],
+            [
+              [0.925, 0.782, 0.463],
+              [0.938, 0.793, 0.487]
+            ],
+            [
+              [0.943, 0.945, 0.875],
+              [0.953, 0.947, 0.881]
+            ],
+            [
+              [0.217, 0.333, 0.397],
+              [0.288, 0.386, 0.42]
+            ]
+          ];
+          const scattering = [0.36, 0.61, 0.67, 0.6, 0.91, 0.22],
+            cap = Math.min(FIELD_H - 1, Math.ceil((m.peak + 4) / dy));
+          for (let y = 0; y <= cap; y++)
+            for (let i = 0; i < N; i++) {
+              const idx = y * N + i,
+                o = idx * 4,
+                h = (y + 0.5) * dy;
+              if (h > sky[i] + 2) continue;
+              const silkIndex =
+                ((((Math.floor(h * 2.94) + k * 121) & 1023) << 10) + ((i * 3 + k * 193) & 1023)) * 4;
+              const tooth = cloth.data[silkIndex + 1] / 255,
+                grit = cloth.data[silkIndex + 2] / 255;
+              const sun = clamp(0.52 + 0.5 * tone[idx]),
+                deep = 1 - sun;
+              const left = y * N + ((i - 1) & (N - 1)),
+                right = y * N + ((i + 1) & (N - 1)),
+                down = Math.max(0, y - 1) * stride + i,
+                up = Math.min(FIELD_H - 1, y + 1) * stride + i;
+              for (let pass = 0; pass < 6; pass++) {
+                const field = fields[pass],
+                  level = field[idx];
+                const gx = (field[right] - field[left]) / (2 * dx),
+                  gy = (field[up] - field[down]) / (2 * dy);
+                const slope = Math.max(0.0026, Math.hypot(gx, gy));
+                const distance = level / slope,
+                  spec = washSpecs[pass],
+                  width = spec.width;
+                const spread = 0.85 + 1.19 * smooth(0.46 - (0.49 * (gx + gy * 0.24)) / slope);
+                const tide = Math.exp(-Math.pow((distance - width * spread * 0.99) / (width * 0.71), 2));
+                const film = smooth((distance + 0.56 * spread) / ((0.93 + 0.34 * (1 - tooth)) * spread));
+                const wet = smooth((level + 0.018) / (0.115 + 0.1 * grit));
+                const coverage = film * (1 - 0.27 * (1 - wet) * (1 - tide));
+                const load = spec.opacity * coverage * (1 + spec.rim * tide) * (0.94 + 0.14 * (tooth - 0.34));
+                const scatter = scattering[pass] * (0.6 + 0.4 * sun);
+                for (let c = 0; c < 3; c++) {
+                  const pigmentDensity = absorption[pass][c] * (0.76 + 0.23 * deep);
+                  const loose = load * scatter,
+                    transmission = Math.exp(-load * pigmentDensity) * (1 - loose);
+                  for (let stock = 0; stock < 2; stock++) {
+                    const previous = stocks[stock][o + c];
+                    const bounced = 255 * particles[pass][stock][c] * (0.6 + 0.4 * sun) * loose;
+                    stocks[stock][o + c] = Math.round(previous * transmission + bounced);
+                  }
+                }
+              }
+              // 远山的矿色先吃进一层天光，山趾的消解另由透绢蒙版完成。
+              for (let c = 0; c < 3; c++)
+                for (let stock = 0; stock < 2; stock++) {
+                  const base = stocks[stock][o + c] / 255,
+                    air = stock ? dayAir : nightAir;
+                  const distanceVeil = k === 0 ? 0.14 : k === 2 ? 0.04 : 0.015;
+                  stocks[stock][o + c] = Math.round(255 * clamp(mix(base, air[c], distanceVeil)));
+                }
+            }
+          // 峰尖上方延展数行相同矿色，双线性取样时仍能保住清晰的山脊。
+          for (let i = 0; i < N; i++) {
+            const j = Math.max(0, Math.min(FIELD_H - 1, Math.floor(sky[i] / dy + 0.55)));
+            for (let next = j + 1; next <= Math.min(j + 5, FIELD_H - 1); next++) {
+              for (const s of stocks)
+                for (let c = 0; c < 4; c++) s[(next * N + i) * 4 + c] = s[(j * N + i) * 4 + c];
+            }
+          }
+        }
+
+        // 正射投影用近至远的高度包络求可见坡面。还原坡面梯度时沿深度插值，避免等高带。
+        function scanTerrain(m) {
+          const { field, k } = m,
+            sky = new Float32Array(N),
+            arcs = new Float32Array(N + 1);
+          const inside = [new Float32Array(N), new Float32Array(N), new Float32Array(N)];
+          const gaps = inside.map(() => new Float32Array(N)),
+            depths = new Float32Array(N * FIELD_H);
+          const stocks = [new Uint8Array(N * FIELD_H * 4), new Uint8Array(N * FIELD_H * 4)],
+            tone = new Float32Array(N * FIELD_H);
+          const fields = washSpecs.map(() => new Float32Array(N * FIELD_H));
+          let peak = 0;
+          for (let i = 0; i < N; i++) {
+            let high = 0,
+              lastVisible = 0,
+              next = 0;
+            for (let z = 1; z <= Z; z++) {
+              const h = field[z * N + i];
+              if (h <= high) continue;
+              if (z - lastVisible > 4 && high > 4) {
+                const g = lastVisible / Z,
+                  group = g < 0.32 ? 0 : g < 0.61 ? 1 : 2,
+                  gap = (z - lastVisible) / Z;
+                if (gap > gaps[group][i]) {
+                  inside[group][i] = high;
+                  gaps[group][i] = gap;
+                }
+              }
+              const h0 = field[(z - 1) * N + i];
+              while (next < FIELD_H && ((next + 0.5) * CEILING) / FIELD_H <= h) {
+                const alt = ((next + 0.5) * CEILING) / FIELD_H;
+                depths[next * N + i] = (z - 1 + clamp((alt - h0) / (h - h0 || 1))) / Z;
+                next++;
+              }
+              high = h;
+              lastVisible = z;
+            }
+            sky[i] = high;
+            peak = Math.max(peak, high);
+            for (let j = next; j < FIELD_H; j++) depths[j * N + i] = lastVisible / Z;
+          }
+          for (let i = 1; i <= N; i++)
+            arcs[i] = arcs[i - 1] + Math.hypot(PERIOD / N, sky[i & (N - 1)] - sky[i - 1]);
+          const dx = PERIOD / N,
+            dz = DEPTH / Z;
+          for (let y = 0; y < FIELD_H; y++)
+            for (let i = 0; i < N; i++) {
+              const idx = y * N + i,
+                alt = ((y + 0.5) * CEILING) / FIELD_H;
+              if (alt > sky[i] + 2 && y > 0) {
+                for (const f of fields) f[idx] = f[idx - N];
+                for (const stock of stocks) {
+                  const a = idx * 4,
+                    b = (idx - N) * 4;
+                  stock[a] = stock[b];
+                  stock[a + 1] = stock[b + 1];
+                  stock[a + 2] = stock[b + 2];
+                  stock[a + 3] = stock[b + 3];
+                }
+                continue;
+              }
+              const d = depths[idx],
+                v = clamp(d * Z, 1, Z - 2),
+                j = Math.floor(v),
+                f = v - j,
+                row = j * N;
+              const l = (i - 1) & (N - 1),
+                r = (i + 1) & (N - 1);
+              const hx =
+                mix(field[row + r] - field[row + l], field[row + N + r] - field[row + N + l], f) / (2 * dx);
+              const hz =
+                mix(field[row + N + i] - field[row - N + i], field[row + 2 * N + i] - field[row + i], f) / (2 * dz);
+              const norm = 1 / Math.hypot(hx, 1, hz),
+                nx = -hx * norm,
+                ny = norm,
+                nz = -hz * norm;
+              const lighting = -0.79 * nx + 0.58 * ny - 0.25 * nz;
+              let occlusion = 0;
+              for (const step of [8, 26, 59]) {
+                const sx = (i - Math.round(step / dx)) & (N - 1),
+                  sz = Math.max(0, j - Math.round((step * 0.31) / dz));
+                const rise = (field[sz * N + sx] - alt) / step;
+                occlusion = Math.max(occlusion, smooth((rise - 0.2) / 1.44));
+              }
+              tone[idx] = lighting - 0.33 * occlusion;
+              let edgeWash = Math.exp(-Math.max(0, sky[i] - alt) / 7.1) * 0.7;
+              for (let r = 0; r < 3; r++) {
+                const drop = inside[r][i] - alt;
+                if (gaps[r][i] > 0.045 && drop >= 0)
+                  edgeWash = Math.max(edgeWash, Math.exp(-drop / (6 + 4 * d)) * clamp(gaps[r][i] * 5.4));
+              }
+              const tints = layersAt(i * dx, d, alt, k);
+              wetMargins(fields, idx, i * dx, alt, d, k, tints, tone[idx]);
+              layGround(stocks[0], idx * 4, 0, k, tints, lighting, occlusion, d, nx, edgeWash);
+              layGround(stocks[1], idx * 4, 1, k, tints, lighting, occlusion, d, nx, edgeWash);
+            }
+          Object.assign(m, { sky, arcs, arcLength: arcs[N], inside, gaps, depths, stocks, peak, tone, guides: [] });
+          dryWashes(m, fields);
+        }
+        function sampleSurface(array, x, h) {
+          const a = (mod(x, PERIOD) * N) / PERIOD,
+            i = Math.floor(a),
+            r = (i + 1) & (N - 1);
+          const y = clamp((h * FIELD_H) / CEILING - 0.5, 0, FIELD_H - 1.001),
+            j = Math.floor(y),
+            f = y - j;
+          const row = j * N;
+          return mix(
+            mix(array[row + i], array[row + r], a - i),
+            mix(array[row + N + i], array[row + N + r], a - i),
+            f
+          );
+        }
+        const visibleDepth = (m, x, h) => sampleSurface(m.depths, x, h);
+        function averageSlope(m, x, d) {
+          const gx = (texel(m.field, x + 3, d) - texel(m.field, x - 3, d)) / 6;
+          const gz = (texel(m.field, x, d + 0.014) - texel(m.field, x, d - 0.014)) / (0.028 * DEPTH);
+          return [gx, gz];
+        }
+        function spline(ctx, pts, begin) {
+          if (begin) ctx.moveTo(pts[0][0], pts[0][1]);
+          for (let j = 0; j < pts.length - 1; j++) {
+            const a = pts[Math.max(0, j - 1)],
+              b = pts[j],
+              c = pts[j + 1],
+              d = pts[Math.min(pts.length - 1, j + 2)];
+            ctx.bezierCurveTo(
+              b[0] + (c[0] - a[0]) / 6,
+              b[1] + (c[1] - a[1]) / 6,
+              c[0] - (d[0] - b[0]) / 6,
+              c[1] - (d[1] - b[1]) / 6,
+              c[0],
+              c[1]
+            );
+          }
+        }
+        // 笔尖两侧均为连续三次曲线。按弧长提按并轻摇笔锋，闭合的笔形保留极细的起收。
+        function brushShape(ctx, points, width, alpha, channel, seed) {
+          if (points.length < 3 || alpha < 0.015) return;
+          const length = [0];
+          let minX = Infinity,
+            maxX = -Infinity;
+          for (let i = 1; i < points.length; i++)
+            length.push(
+              length[i - 1] + Math.hypot(points[i][0] - points[i - 1][0], points[i][1] - points[i - 1][1])
+            );
+          const total = length.at(-1);
+          if (total < 0.7) return;
+          const left = [],
+            right = [];
+          for (let i = 0; i < points.length; i++) {
+            const p = points[i],
+              a = points[Math.max(0, i - 1)],
+              b = points[Math.min(points.length - 1, i + 1)];
+            const dx = b[0] - a[0],
+              dy = b[1] - a[1],
+              l = Math.hypot(dx, dy) || 1,
+              nx = -dy / l,
+              ny = dx / l;
+            const u = length[i] / total,
+              pressure = 0.035 + 0.965 * Math.pow(Math.max(0, Math.sin(Math.PI * u)), 0.38);
+            const tremor =
+              0.13 * Math.sin(length[i] * 0.79 + seed) + 0.09 * Math.sin(length[i] * 0.37 + seed * 2.8);
+            const w = width * 0.5 * pressure * (0.89 + 0.11 * Math.cos(u * 5.3 + seed));
+            left.push([p[0] + nx * (tremor + w), p[1] + ny * (tremor + w)]);
+            right.push([p[0] + nx * (tremor - w), p[1] + ny * (tremor - w)]);
+            minX = Math.min(minX, p[0] - 2);
+            maxX = Math.max(maxX, p[0] + 2);
+          }
+          ctx.fillStyle = channel === 0 ? '#f00' : channel === 1 ? '#0f0' : '#00f';
+          ctx.globalAlpha = alpha;
+          right.reverse();
+          for (let k = Math.ceil(-maxX / PERIOD); k <= Math.floor((PERIOD - minX) / PERIOD); k++) {
+            ctx.save();
+            ctx.translate(k * PERIOD, 0);
+            ctx.beginPath();
+            spline(ctx, left, true);
+            const end = right[0];
+            ctx.quadraticCurveTo(end[0], end[1], end[0], end[1]);
+            spline(ctx, right, false);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+          }
+        }
+        // 缓存笔锋中心的欧氏距离与该处提按宽度。运行时以 CSS 像素展开笔锋，纵使改变取景也能守住线径。
+        function encodeBones(m, rgba, strokes) {
+          m.penOpacity = new Uint8Array(PEN_W * PEN_H);
+          const radius = 2.6,
+            densityX = PEN_W / PERIOD,
+            densityY = PEN_H / CEILING;
+          for (let i = 0; i < rgba.length; i += 4) {
+            // getImageData 返回非预乘颜色。把皴笔和飞白的覆盖率带回各自通道后，才能复用 alpha 通道存笔压。
+            const coverage = rgba[i + 3] / 255;
+            rgba[i] = Math.round(rgba[i] * coverage);
+            rgba[i + 2] = Math.round(rgba[i + 2] * coverage);
+            rgba[i + 1] = 255;
+            rgba[i + 3] = 0;
+          }
+          for (const [line, width, opacity, seed] of strokes) {
+            const lengths = [0];
+            for (let j = 1; j < line.length; j++)
+              lengths.push(lengths[j - 1] + Math.hypot(line[j][0] - line[j - 1][0], line[j][1] - line[j - 1][1]));
+            const total = lengths.at(-1);
+            if (total < 1) continue;
+            let prior = null;
+            for (let j = 0; j < line.length - 1; j++) {
+              const a = line[Math.max(0, j - 1)],
+                b = line[j],
+                c = line[j + 1],
+                d = line[Math.min(line.length - 1, j + 2)];
+              const steps = Math.max(1, Math.ceil((lengths[j + 1] - lengths[j]) / 1.25));
+              for (let n = j ? 1 : 0; n <= steps; n++) {
+                const t = n / steps,
+                  t2 = t * t,
+                  t3 = t2 * t;
+                const at = (axis) =>
+                  0.5 *
+                  (2 * b[axis] +
+                    (-a[axis] + c[axis]) * t +
+                    (2 * a[axis] - 5 * b[axis] + 4 * c[axis] - d[axis]) * t2 +
+                    (-a[axis] + 3 * b[axis] - 3 * c[axis] + d[axis]) * t3);
+                const arc = mix(lengths[j], lengths[j + 1], t),
+                  u = arc / total;
+                const wiggle = 0.13 * Math.sin(arc * 0.79 + seed) + 0.09 * Math.sin(arc * 0.37 + seed * 2.8);
+                const derivative = (axis) =>
+                  0.5 *
+                  (c[axis] -
+                    a[axis] +
+                    2 * t * (2 * a[axis] - 5 * b[axis] + 4 * c[axis] - d[axis]) +
+                    3 * t * t * (-a[axis] + 3 * b[axis] - 3 * c[axis] + d[axis]));
+                const second = (axis) =>
+                  2 * a[axis] -
+                  5 * b[axis] +
+                  4 * c[axis] -
+                  d[axis] +
+                  3 * t * (-a[axis] + 3 * b[axis] - 3 * c[axis] + d[axis]);
+                const dx = derivative(0),
+                  dy = derivative(1),
+                  l = Math.hypot(dx, dy) || 1;
+                const curvature = Math.abs(dx * second(1) - dy * second(0)) / (l * l * l);
+                const turn = clamp(curvature * 4.8),
+                  dragAcross = Math.abs(dy / l);
+                const tip = 0.76 + 0.24 * smooth(u / 0.018);
+                const tail = 1 - smooth((u - 0.82) / 0.18);
+                const handling = clamp(
+                  width * (0.85 + 0.1 * dragAcross) +
+                    0.15 * turn +
+                    0.1 * Math.exp(-((u - 0.045) * (u - 0.045)) / 0.00053),
+                  0.5,
+                  1.1
+                );
+                const w = 0.5 * handling * tip * (0.11 + 0.89 * tail);
+                const ink =
+                  opacity *
+                  (0.61 + 0.39 * smooth(u / 0.022)) *
+                  (0.86 + 0.14 * turn) *
+                  (1 - smooth((u - 0.76) / 0.24));
+                const x = at(0) - (dy / l) * wiggle,
+                  y = at(1) + (dx / l) * wiggle;
+                if (prior) {
+                  const vx = x - prior[0],
+                    vy = y - prior[1],
+                    l2 = vx * vx + vy * vy || 1;
+                  const x0 = Math.floor((Math.min(x, prior[0]) - radius) * densityX),
+                    x1 = Math.ceil((Math.max(x, prior[0]) + radius) * densityX);
+                  const y0 = Math.max(0, Math.floor((Math.min(y, prior[1]) - radius) * densityY)),
+                    y1 = Math.min(PEN_H - 1, Math.ceil((Math.max(y, prior[1]) + radius) * densityY));
+                  for (let row = y0; row <= y1; row++)
+                    for (let col = x0; col <= x1; col++) {
+                      const rx = (col + 0.5) / densityX - prior[0],
+                        ry = (row + 0.5) / densityY - prior[1];
+                      const f = clamp((rx * vx + ry * vy) / l2),
+                        distance = Math.hypot(rx - f * vx, ry - f * vy);
+                      const o = (row * PEN_W + (col & (PEN_W - 1))) * 4;
+                      if (distance < (rgba[o + 1] / 255) * radius) {
+                        rgba[o + 1] = Math.round((distance / radius) * 255);
+                        rgba[o + 3] = Math.round(clamp(mix(prior[2], w, f) / 0.55) * 255);
+                        m.penOpacity[o >> 2] = Math.round(clamp(mix(prior[3], ink, f)) * 255);
+                      }
+                    }
+                }
+                prior = [x, y, w, ink];
+              }
+            }
+          }
+          m.inkData = rgba;
+        }
+        function paintInk(m) {
+          const { c, g } = offscreen(PEN_W, PEN_H, true);
+          g.setTransform(PEN_W / PERIOD, 0, 0, PEN_H / CEILING, 0, 0);
+          g.globalCompositeOperation = 'lighter';
+          const rand = random(94071 + m.k * 315),
+            w = PERIOD / N;
+          const backbones = [];
+          function mark(pts, width, alpha, ch = 0) {
+            const seed = rand() * 21;
+            if (ch === 1) {
+              backbones.push([pts, width, alpha, seed]);
+              return;
+            }
+            brushShape(g, pts, width, alpha, ch, seed);
+          }
+          function contour(pts, importance) {
+            if (pts.length < 4) return;
+            m.guides.push(pts);
+            for (let i = 0; i < pts.length - 2; ) {
+              const n = Math.min(pts.length - i, 12 + Math.floor(rand() * 38)),
+                seg = pts.slice(i, i + n);
+              mark(seg, 0.58 + 0.46 * rand(), importance * (0.74 + 0.26 * rand()), 1);
+              i += Math.max(2, n - 2);
+            }
+          }
+          const brushScale = clamp((innerHeight * 0.359) / 300, 0.72, 1.55);
+          const outer = Array.from({ length: N / 2 + 1 }, (_, j) => [j * 2 * w, m.sky[(j * 2) & (N - 1)]]);
+          contour(outer, 0.86);
+          for (let band = 0; band < 3; band++) {
+            const h = m.inside[band],
+              gap = m.gaps[band];
+            let path = [];
+            for (let i = 0; i <= N; i += 2) {
+              const j = i & (N - 1),
+                p = [i * w, h[j]];
+              if (gap[j] < 0.043 || (path.length && Math.abs(p[1] - path.at(-1)[1]) > 7)) {
+                contour(path, 0.49 + rand() * 0.23);
+                path = [];
+              }
+              if (gap[j] >= 0.043) path.push(p);
+            }
+            contour(path, 0.55);
+          }
+          for (const b of m.branches) {
+            let path = [];
+            for (let j = 0; j < 78; j++) {
+              const d = mix(b.head - 0.017, b.toe + 0.026, j / 77);
+              const x = branchPosition(b, d),
+                h = texel(m.field, x, d),
+                seen = visibleDepth(m, x, h - 0.45);
+              if (Math.abs(seen - d) > 0.085 || h < 5) {
+                contour(path, 0.47);
+                path = [];
+                continue;
+              }
+              path.push([x, h]);
+            }
+            contour(path, 0.53);
+          }
+          // 皴笔从可见坡面的梯度积分。阳面疏，阴阳交界密，笔在下一重山脊前自然收住。
+          const groupCount = [1900, 3150, 1480][m.k];
+          for (let n = 0; n < groupCount; n++) {
+            const x = rand() * PERIOD,
+              h = ridgeSample(m.sky, x) * (0.06 + 0.91 * rand()),
+              d = visibleDepth(m, x, h);
+            const [gx, gz] = averageSlope(m, x, d);
+            const shade = clamp(0.43 - 0.55 * gx + 0.12 * gz),
+              patch = noise(x / PERIOD + d * 0.018, h / 73, 21, 33 + m.k);
+            const boundary = 1 - Math.abs(clamp(sampleSurface(m.tone, x, h), -1, 1) - 0.14) * 0.86;
+            if (rand() > 0.08 + 0.43 * shade + 0.3 * patch + 0.24 * boundary) continue;
+            const axe = rand() < 0.28,
+              run = (axe ? 4.7 + rand() * 12 : 10 + rand() * 29) * (0.65 + 0.46 * Math.min(1, h / 105));
+            const group = 3 + Math.floor(rand() * (4 + 8 * shade)),
+              spacing = 0.65 + rand() * 1.45;
+            const sway = (rand() - 0.5) * 0.85,
+              bias = (noise(x / PERIOD, d * 3, 10, 52 + m.k) - 0.5) * 0.85,
+              steps = Math.max(4, Math.ceil(run / 4));
+            for (let s = 0; s < group; s++) {
+              let px = x + (s - group / 2) * spacing,
+                py = h + (rand() - 0.5) * (axe ? 6 : 10) + (s - group / 2) * gx * 0.56,
+                lastD = visibleDepth(m, px, py);
+              const pts = [],
+                cut = steps - Math.floor(rand() * steps * 0.28),
+                curl = (rand() - 0.5) * 0.14;
+              for (let j = 0; j <= cut; j++) {
+                if (py <= 1 || py > ridgeSample(m.sky, px) - 0.4) break;
+                const depth = visibleDepth(m, px, py);
+                if (j && Math.abs(depth - lastD) > 0.097) break;
+                pts.push([px, py]);
+                lastD = depth;
+                const grad = averageSlope(m, px, depth);
+                const tilt = clamp(
+                  (-grad[0] * (axe ? 1.28 : 0.83)) / (0.46 + grad[1] * grad[1] * 0.31) +
+                    bias +
+                    (sway + curl) * Math.sin((j / steps) * Math.PI),
+                  -2.0,
+                  2.0
+                );
+                const dh = -run / steps / Math.hypot(tilt, 1);
+                px -= dh * tilt;
+                py += dh;
+              }
+              mark(
+                pts,
+                (0.4 + 0.39 * rand()) / brushScale,
+                clamp(0.15 + 0.16 * shade + 0.045 * rand(), 0.15, 0.35),
+                0
+              );
+            }
+          }
+          // 沿连续明暗场的等值线走笔。等值线的切向随坡面弯曲，微量法向校正把线留在阴阳交界。
+          for (let j = 0; j < [950, 1450, 740][m.k]; j++) {
+            const x = rand() * PERIOD,
+              h = ridgeSample(m.sky, x) * (0.045 + 0.93 * rand());
+            const level = sampleSurface(m.tone, x, h);
+            if (level < -0.52 || level > 0.86 || h < 6) continue;
+            const maxSteps = 6 + Math.floor(rand() * 22),
+              stride = 2.25 + rand() * 1.2,
+              dirs = [];
+            for (const side of [-1, 1]) {
+              let px = x,
+                py = h,
+                oldX = 0,
+                oldY = 0;
+              const path = [];
+              for (let n = 0; n < maxSteps; n++) {
+                const gx = (sampleSurface(m.tone, px + 2, py) - sampleSurface(m.tone, px - 2, py)) * 0.25;
+                const gy = (sampleSurface(m.tone, px, py + 2) - sampleSurface(m.tone, px, py - 2)) * 0.25;
+                const mag = Math.hypot(gx, gy);
+                if (mag < 0.009) break;
+                let dx = (-side * gy) / mag,
+                  dy = (side * gx) / mag;
+                if (n) {
+                  if (dx * oldX + dy * oldY < 0.36) break;
+                  dx = mix(oldX, dx, 0.69);
+                  dy = mix(oldY, dy, 0.69);
+                }
+                const err = clamp((sampleSurface(m.tone, px, py) - level) / mag, -1.4, 1.4);
+                const sx = px + stride * dx - (gx / mag) * err,
+                  sy = py + stride * dy - (gy / mag) * err;
+                if (
+                  sy < 2 ||
+                  sy > ridgeSample(m.sky, sx) - 1 ||
+                  Math.abs(visibleDepth(m, sx, sy) - visibleDepth(m, px, py)) > 0.085
+                )
+                  break;
+                px = sx;
+                py = sy;
+                oldX = dx;
+                oldY = dy;
+                path.push([px, py]);
+              }
+              dirs.push(path);
+            }
+            const path = dirs[0].reverse().concat([[x, h]], dirs[1]);
+            if (path.length < 6) continue;
+            const main = path.length > 17 && rand() < 0.19;
+            mark(
+              path,
+              main ? 0.6 + 0.37 * rand() : (0.42 + 0.34 * rand()) / brushScale,
+              main ? 0.45 + 0.27 * rand() : 0.15 + 0.2 * rand(),
+              main ? 1 : 0
+            );
+            if (main) m.guides.push(path);
+          }
+          // 岩唇下的小斧劈皴。贴着实际遮挡线落笔，控制下一道石棱以前的行程，局部露出绢底。
+          for (let n = 0; n < [490, 760, 332][m.k]; n++) {
+            const band = Math.floor(rand() * 3),
+              row = m.inside[band],
+              i = Math.floor(rand() * N),
+              ledge = row[i];
+            if (ledge < 15 || m.gaps[band][i] < 0.092) continue;
+            const x = i * w,
+              aspect = (ridgeSample(row, x + 2) - ridgeSample(row, x - 2)) * 0.25;
+            if (Math.abs(aspect) > 1.7 || rand() > 0.24 + 0.68 * noise(x / PERIOD, ledge / 61, 19, 74 + m.k))
+              continue;
+            const count = 3 + Math.floor(8 * rand()),
+              span = 3.3 + 11 * rand(),
+              fall = 2.7 + 7.4 * rand(),
+              step = (rand() - 0.5) * 1.6;
+            for (let j = 0; j < count; j++) {
+              const px = x + (rand() + rand() - 1) * span,
+                rock = ridgeSample(row, px);
+              if (Math.abs(rock - ledge) > span * 0.95 + 2) continue;
+              const py = rock - 0.5 - rand() * 4.1,
+                depth = visibleDepth(m, px, py);
+              const grad = averageSlope(m, px, depth);
+              const drift = clamp(-grad[0] * 0.62 + step + aspect * 0.37, -1.23, 1.23);
+              const dy = (0.42 + rand() * 0.8) * fall,
+                ex = px + dy * drift,
+                ey = py - dy;
+              if (ey < 2 || Math.abs(visibleDepth(m, ex, ey) - depth) > 0.092) continue;
+              const kink = (rand() - 0.5) * 1.62;
+              const stroke = [
+                [px, py],
+                [px + dy * 0.25 * drift + kink, py - dy * 0.28],
+                [px + dy * 0.68 * drift + kink * 0.37, py - dy * 0.62],
+                [ex, ey]
+              ];
+              mark(stroke, (0.42 + 0.36 * rand()) / brushScale, 0.19 + 0.16 * rand());
+              if (rand() < 0.3) {
+                const lift = stroke.slice(0, 3).map(([u, v]) => [u - 0.59, v + 0.45]);
+                mark(lift, (0.4 + 0.18 * rand()) / brushScale, 0.14 + 0.1 * rand(), 2);
+              }
+            }
+          }
+
+          // 枯锋擦过受光山腰时，有些纤维只吃到半笔颜色。颗粒始终附着于山面。
+          for (let i = 0; i < [390, 620, 310][m.k]; i++) {
+            const x = rand() * PERIOD,
+              h = ridgeSample(m.sky, x) * (0.18 + 0.78 * rand()),
+              d = visibleDepth(m, x, h);
+            const [gx] = averageSlope(m, x, d);
+            if (gx < -0.49 && rand() < 0.75) continue;
+            const span = 3 + 13 * rand(),
+              amount = 10 + Math.floor(rand() * 22);
+            for (let j = 0; j < amount; j++) {
+              const u = (rand() - 0.5) * span,
+                v = (rand() - 0.5) * 3.8,
+                px = x + u,
+                py = h + v + gx * u * 0.51;
+              if (py >= ridgeSample(m.sky, px) - 0.55 || py <= 1) continue;
+              const r = 0.17 + 0.57 * rand();
+              g.globalAlpha = 0.13 + 0.37 * rand();
+              g.fillStyle = '#00f';
+              for (const off of px < 2 ? [0, PERIOD] : px > PERIOD - 2 ? [0, -PERIOD] : [0]) {
+                g.beginPath();
+                g.ellipse(px + off, py, r * (1 + rand()), r * 0.52, -0.75 + gx * 0.33, 0, TAU);
+                g.fill();
+              }
+            }
+          }
+          const pixels = g.getImageData(0, 0, PEN_W, PEN_H);
+          encodeBones(m, new Uint8Array(pixels.data.buffer), backbones);
+          c.width = c.height = 1;
+        }
+        // 苔点以石缝和扭转的山坳为种植位置，同一片苔内再分小簇；每一笔都压住自己的岩面。
+        function mossDabs(m) {
+          const rand = random(91083 + m.k * 811),
+            dabs = [],
+            scaleAtPrint = clamp((innerHeight * 0.359) / 300, 0.72, 1.55);
+          const anchors = [];
+          for (let i = 0; i < N; i += 5) {
+            const x = (i * PERIOD) / N,
+              y = m.sky[i],
+              l = ridgeSample(m.sky, x - 11),
+              r = ridgeSample(m.sky, x + 11);
+            const bend = clamp((l + r - 2 * y + 4) / 12),
+              face = clamp((r - l + 15) / 32);
+            anchors.push([x, y, clamp(0.28 + 0.49 * bend + 0.15 * face), 0]);
+            for (let j = 0; j < 3; j++)
+              if (m.gaps[j][i] > 0.06 && m.inside[j][i] > 9)
+                anchors.push([x, m.inside[j][i], 0.48 + Math.min(0.47, m.gaps[j][i]), j + 1]);
+          }
+          const count = [196, 301, 139][m.k];
+          for (let n = 0; n < count; n++) {
+            const [x, h, favour, ridge] = anchors[Math.floor(rand() * anchors.length)];
+            const shelter = fbm(x / PERIOD, h / 81, 13, 65 + m.k);
+            const grove = smooth((shelter + 0.22 * favour - 0.4) / 0.29);
+            if (rand() > 0.22 + 0.68 * grove) continue;
+            const d = visibleDepth(m, x, Math.max(1, h - 2));
+            const rose = layersAt(x, d, h, m.k)[0];
+            const flower = rand() < clamp(rose * 0.89 + 0.1 + (shelter - 0.5) * 0.45, 0, 0.83);
+            const branches = 2 + Math.floor(rand() * (3 + 9 * grove));
+            const row = ridge ? m.inside[ridge - 1] : m.sky;
+            const slope = clamp((ridgeSample(row, x + 3) - ridgeSample(row, x - 3)) / 6, -1.2, 1.2);
+            const shelf = 5 + rand() * (8 + 14 * favour),
+              setback = 1 + rand() * (ridge ? 5.9 : 4.1);
+            for (let sprig = 0; sprig < branches; sprig++) {
+              const offset = (rand() - 0.5) * 2 * shelf;
+              const cx = x + offset,
+                rock = ridgeSample(row, cx);
+              const cy = (Math.abs(rock - h) < shelf * 1.8 ? rock : h + offset * slope) - setback - 2.7 * rand();
+              const flecks = 3 + Math.floor(rand() * (3 + 6 * rand())),
+                reach = 1.2 + 3.3 * rand();
+              const family = flower && rand() < 0.79 ? 2 : rand() < 0.48 ? 1 : 0;
+              for (let j = 0; j < flecks; j++) {
+                const u = (rand() + rand() + rand() - 1.5) * reach * 1.58;
+                const px = mod(cx + u, PERIOD),
+                  py = cy + u * slope * 0.55 + (rand() + rand() - 1) * 2.8;
+                const diam = (1 + 1.5 * rand() ** 1.65) / scaleAtPrint;
+                if (py < 2 || py > ridgeSample(m.sky, px) - 0.38 * diam) continue;
+                dabs.push({
+                  x: px,
+                  y: py,
+                  r: diam * 0.5,
+                  ratio: 0.41 + 0.5 * rand(),
+                  angle: clamp(slope, -0.85, 0.85) + (0.5 - rand()) * 1.16,
+                  type: rand() < 0.14 ? 0 : family,
+                  load: 0.46 + 0.44 * rand(),
+                  shape: Math.floor(rand() * 4),
+                  cap: rand() < 0.24
+                });
+              }
+            }
+          }
+          return dabs;
+        }
+        const dabShapes = Array.from({ length: 4 }, (_, i) => {
+          const p = new Path2D(),
+            b = i * 0.09;
+          p.moveTo(-0.98, 0.16 - b);
+          p.bezierCurveTo(-1.04, -0.47, -0.5, -1.04 + b, 0.06, -0.82);
+          p.bezierCurveTo(0.49, -0.98 + b, 1.06, -0.52, 0.92, 0.09);
+          p.bezierCurveTo(0.75, 0.65, 0.19, 1 - 0.1 * b, -0.36, 0.69);
+          p.bezierCurveTo(-0.71, 0.74 - b, -0.93, 0.43, -0.98, 0.16 - b);
+          p.closePath();
+          return p;
+        });
+        function printMoss(g, dabs, stock, density) {
+          const shades = stock
+            ? [
+                ['#473e43', '#6b6660'],
+                ['#325d51', '#8ba07b'],
+                ['#aa5965', '#e6b8a3']
+              ]
+            : [
+                ['#343443', '#6a5b5e'],
+                ['#2b594f', '#94ad8b'],
+                ['#b26875', '#edc1af']
+              ];
+          g.save();
+          for (const v of dabs) {
+            const c = Math.cos(v.angle),
+              s = Math.sin(v.angle),
+              rx = v.r * density,
+              ry = rx * v.ratio;
+            const y = v.y * density;
+            for (
+              let tile = Math.ceil((-v.x - v.r * 1.2) / PERIOD);
+              tile <= Math.floor((PERIOD - v.x + v.r * 1.2) / PERIOD);
+              tile++
+            ) {
+              const x = (v.x + tile * PERIOD) * density;
+              g.fillStyle = shades[v.type][0];
+              g.globalAlpha = v.load;
+              g.setTransform(c * rx, s * rx, -s * ry, c * ry, x, y);
+              g.fill(dabShapes[v.shape]);
+              if (v.cap) {
+                g.globalAlpha = v.load * 0.82;
+                g.fillStyle = shades[v.type][1];
+                g.setTransform(
+                  c * rx * 0.69,
+                  s * rx * 0.69,
+                  -s * ry * 0.62,
+                  c * ry * 0.62,
+                  x - rx * 0.22,
+                  y + ry * 0.39
+                );
+                g.fill(dabShapes[(v.shape + 1) % 4]);
+              }
+            }
+          }
+          g.restore();
+        }
+        const clearings = [
+          [
+            [745, 70, 219, 55],
+            [1644, 106, 126, 61],
+            [2291, 54, 147, 37]
+          ],
+          [
+            [706, 52, 163, 37],
+            [1078, 54, 98, 36],
+            [1513, 49, 127, 42],
+            [1890, 81, 138, 63]
+          ],
+          [
+            [815, 37, 122, 40],
+            [1196, 33, 148, 49],
+            [1734, 32, 143, 38],
+            [2119, 21, 102, 27]
+          ]
+        ];
+        function opacityColumn(k, x, crest) {
+          const fog = 0.5 * noise(x / PERIOD, 1, 12, 81 + k) + 0.5 * noise(x / PERIOD, 3, 29, 138 + k);
+          const floor = 0.6 + fog * 3.5;
+          const headland = smooth((crest - [94, 98, 43][k]) / [81, 93, 43][k]);
+          const width = ([15, 14, 4][k] + [61, 53, 44][k] * fog) * (0.96 - 0.58 * headland);
+          const pools = [];
+          for (const [cx, cy, wx, wy] of clearings[k]) {
+            const u = fold(x, cx) / wx;
+            if (Math.abs(u) < 1.38) pools.push([u * u, cy + 9 * (fog - 0.5), wy]);
+          }
+          return { floor, width, pools };
+        }
+        function opacityAt(col, h) {
+          let keep = smooth((h - col.floor) / col.width);
+          for (const [u, cy, wy] of col.pools) {
+            const r = u + ((h - cy) / wy) ** 2;
+            keep *= smooth((r - 0.046) / 1.3);
+          }
+          return keep;
+        }
+        // 压印已干的矿色。高分辨率版画、纸性和苔点在此一次烘焙。主循环只取样已印好的画层。
+        function bakeMountain(m) {
+          const density = PAINT_W / PERIOD,
+            width = PAINT_W,
+            height = Math.ceil((m.peak + 3.5) * density);
+          const sheets = [offscreen(width, height), offscreen(width, height)],
+            photos = sheets.map((s) => s.g.createImageData(width, height));
+          const matte = offscreen(width, height),
+            matteImage = matte.g.createImageData(width, height);
+          const ix = new Int32Array(width),
+            fx = new Float32Array(width),
+            lookupInk = new Int32Array(width),
+            inkMixX = new Float32Array(width);
+          const crest = new Float32Array(width),
+            columns = [];
+          const shelfHeights = m.inside.map(() => new Float32Array(width));
+          const shelfStrengths = m.gaps.map(() => new Float32Array(width));
+          const crestStrength = new Float32Array(width);
+          for (let i = 0; i < width; i++) {
+            const x = (i + 0.5) / density,
+              u = (x * N) / PERIOD,
+              b = Math.floor(u);
+            ix[i] = b & (N - 1);
+            fx[i] = u - b;
+            const penX = ((i + 0.5) * PEN_W) / width - 0.5;
+            lookupInk[i] = Math.floor(penX) & (PEN_W - 1);
+            inkMixX[i] = penX - Math.floor(penX);
+            crest[i] = ridgeSample(m.sky, x);
+            columns.push(opacityColumn(m.k, x, crest[i]));
+            const facing = ridgeSample(m.sky, x + 2) - ridgeSample(m.sky, x - 2);
+            crestStrength[i] =
+              0.09 + 0.46 * smooth(0.38 + facing * 0.18) * (0.39 + 0.61 * noise(x / PERIOD, 2.8, 57, 71 + m.k));
+            for (let shelf = 0; shelf < 3; shelf++) {
+              const current = m.inside[shelf][ix[i]],
+                next = m.inside[shelf][(ix[i] + 1) & (N - 1)];
+              shelfHeights[shelf][i] = mix(current, next, fx[i]);
+              shelfStrengths[shelf][i] =
+                Math.abs(current - next) > 7 ? 0 : 0.3 * smooth((ridgeSample(m.gaps[shelf], x) - 0.043) / 0.13);
+            }
+          }
+          for (let j = 0; j < height; j++) {
+            const h = (j + 0.5) / density,
+              sy = clamp((h * FIELD_H) / CEILING - 0.5, 0, FIELD_H - 1.002),
+              row = Math.floor(sy),
+              fy = sy - row;
+            const penY = clamp((h * PEN_H) / CEILING - 0.5, 0, PEN_H - 1.001),
+              inkRow = Math.floor(penY) * PEN_W,
+              inkMixY = penY - Math.floor(penY);
+            const fiberRow = ((Math.floor(((j + 0.5) * 5 * LOOM) / width) + 131 * m.k) & 1023) * LOOM;
+            const depositRow = ((Math.floor((h * LOOM * 2) / PERIOD) + 313 * m.k) & 1023) * LOOM;
+            for (let i = 0; i < width; i++) {
+              const o = (j * width + i) * 4,
+                below = crest[i] - h;
+              if (below < -0.82 / density) continue;
+              const keep = opacityAt(columns[i], h) * clamp(0.5 + below * density);
+              matteImage.data[o] = matteImage.data[o + 1] = matteImage.data[o + 2] = 179;
+              matteImage.data[o + 3] = keep * 255;
+              const raw = (row * N + ix[i]) * 4,
+                other = (row * N + ((ix[i] + 1) & (N - 1))) * 4;
+              const nib = (inkRow + lookupInk[i]) * 4,
+                nibNext = (inkRow + ((lookupInk[i] + 1) & (PEN_W - 1))) * 4;
+              const pen = m.inkData,
+                stride = 4 * PEN_W,
+                ixMix = inkMixX[i];
+              const ink =
+                mix(
+                  mix(pen[nib], pen[nibNext], ixMix),
+                  mix(pen[nib + stride], pen[nibNext + stride], ixMix),
+                  inkMixY
+                ) / 255;
+              const dry =
+                mix(
+                  mix(pen[nib + 2], pen[nibNext + 2], ixMix),
+                  mix(pen[nib + stride + 2], pen[nibNext + stride + 2], ixMix),
+                  inkMixY
+                ) / 255;
+              const fi = (fiberRow + ((Math.floor(((i + 0.5) * 5 * LOOM) / width) + m.k * 111) & 1023)) * 4;
+              const fibre = cloth.data[fi] / 255,
+                pore = cloth.data[fi + 1] / 255,
+                sand = cloth.data[fi + 2] / 255;
+              const inkLoad = clamp(ink * (1.43 - 0.43 * ink) * (0.74 + 0.46 * pore)),
+                voids = clamp(dry * (0.65 + 0.68 * (1 - pore)));
+              const daylight = clamp(m.tone[raw >> 2] + 0.3);
+              const sparkle = smooth((sand - 0.68) / 0.24) * (0.017 + 0.068 * (1 - pore)) * (0.4 + 0.6 * daylight);
+              const clot = cloth.clusters[fi >> 2] / 255 - 0.5;
+              const larger =
+                cloth.clusters[depositRow + ((Math.floor(((i + 0.5) * 2 * LOOM) / width) + m.k * 223) & 1023)] /
+                  255 -
+                0.5;
+              const scatter =
+                (0.8 + 0.24 * pore) * (sand - 0.5) * (0.074 + 0.039 * (1 - ink)) +
+                (clot * 0.13 + larger * 0.107) * (0.5 + 0.5 * daylight);
+              const flake =
+                smooth((clot + larger * 0.35 - 0.17) / 0.28) *
+                smooth((daylight + 0.46 * pore - 0.48) / 0.82) *
+                (0.085 + 0.06 * sand);
+              // 岩唇内侧一丝积粉，随坡向、绢齿和笔锋断续。只有迎光的一侧留亮。
+              let ridgeLight = crestStrength[i] * Math.max(0, 1 - Math.abs(below - 0.57) / 0.92);
+              for (let shelf = 0; shelf < 3; shelf++) {
+                const inset = shelfHeights[shelf][i] - h;
+                if (inset > -0.18 && inset < 1.95)
+                  ridgeLight = Math.max(ridgeLight, shelfStrengths[shelf][i] * (1 - Math.abs(inset - 0.62) / 1.35));
+              }
+              const glint = ridgeLight * (0.38 + 0.62 * daylight) * (0.45 + 0.55 * fibre);
+              for (let stock = 0; stock < 2; stock++) {
+                const src = m.stocks[stock],
+                  dest = photos[stock].data,
+                  cold = stock ? [53, 58, 59] : [37, 42, 49];
+                for (let c = 0; c < 3; c++) {
+                  let v = mix(
+                    mix(src[raw + c], src[other + c], fx[i]),
+                    mix(src[raw + N * 4 + c], src[other + N * 4 + c], fx[i]),
+                    fy
+                  );
+                  const stain = 1 - (0.048 + 0.048 * inkLoad) * (pore - 0.38);
+                  v = v * stain * (1 + scatter) + (fibre - 0.5) * (1.6 + inkLoad * 4);
+                  v = mix(v, stock ? [224, 213, 189][c] : [65, 68, 70][c], voids * 0.89);
+                  v = mix(v, [232, 222, 193][c], sparkle + flake);
+                  v = mix(v, [242, 231, 194][c], glint);
+                  dest[o + c] = clamp(mix(v, cold[c], inkLoad * (m.k === 0 ? 0.58 : 0.79)), 5, 249);
+                }
+                dest[o + 3] = 255;
+              }
+            }
+          }
+          const dabs = mossDabs(m);
+          matte.g.putImageData(matteImage, 0, 0);
+          for (let stock = 0; stock < 2; stock++) {
+            const { g } = sheets[stock];
+            g.putImageData(photos[stock], 0, 0);
+            printMoss(g, dabs, stock, density);
+            // 绢丝同岩面上的颜料一起成像。经纬沟壑的吸水差已在上面的颜料浓度里计算。
+            g.save();
+            g.globalCompositeOperation = stock ? 'multiply' : 'soft-light';
+            g.globalAlpha = stock ? 0.34 : 0.31;
+            const textile = g.createPattern(cloth.ink[stock], 'repeat');
+            const threadScale = width / (5 * LOOM);
+            textile.setTransform(
+              new DOMMatrix([threadScale, 0, 0, threadScale, -m.k * 111 * threadScale, -m.k * 131 * threadScale])
+            );
+            g.fillStyle = textile;
+            g.fillRect(0, 0, width, height);
+            g.restore();
+            g.globalCompositeOperation = 'destination-in';
+            g.drawImage(matte.c, 0, 0);
+            g.globalCompositeOperation = 'source-over';
+          }
+          m.prints = sheets.map((s) => ({ c: s.c, h: height / density }));
+          matte.c.width = matte.c.height = 1;
+          // 将显色和透明度分开：纸底透明和墨骨提按可独立合成，悬停时仅重采样这张控制图。
+          for (let y = 0; y < PEN_H; y++) {
+            const row = Math.min(FIELD_H - 1, Math.floor(((y + 0.5) * FIELD_H) / PEN_H)) * N;
+            for (let x = 0; x < PEN_W; x++) {
+              const o = (y * PEN_W + x) * 4;
+              m.inkData[o] = m.stocks[0][(row + Math.floor((x * N) / PEN_W)) * 4 + 3];
+              m.inkData[o + 2] = m.penOpacity[o >> 2];
+            }
+          }
+          delete m.penOpacity;
+          delete m.stocks;
+        }
+
+        const mountains = [0, 1, 2].map((k) => {
+          const m = elevationField(k);
+          scanTerrain(m);
+          paintInk(m);
+          bakeMountain(m);
+          delete m.field;
+          delete m.depths;
+          delete m.tone;
+          delete m.inside;
+          delete m.gaps;
+          delete m.branches;
+          return m;
+        });
+        const globalPeak = Math.max(...mountains.map((m) => m.peak));
+        const farCurves = [
+          profileCurve(
+            '0,124 94,159 162,146 245,166 303,151 394,188 457,159 523,165 610,119 653,136 721,129 771,163 815,156 886,186 939,173 993,189 1082,147 1156,166 1223,152 1290,167 1374,158 1452,201 1503,182 1581,198 1646,175 1721,187 1813,142 1900,164 1981,144 2059,180 2150,153 2225,167 2313,144 2400,124'
+          ),
+          profileCurve(
+            '0,91 123,109 222,93 320,142 391,121 503,143 559,116 627,130 705,97 790,131 872,121 958,150 1030,124 1109,135 1226,96 1320,137 1421,118 1540,139 1662,104 1748,128 1852,106 1930,135 2031,115 2130,135 2222,112 2311,123 2400,91'
+          )
+        ];
+        const distant = farCurves.map((curve, k) =>
+          Float32Array.from(
+            { length: N },
+            (_, i) => curve((PERIOD * i) / N) + (ridged(i / N, 11, 23, 84 + k, 4) - 0.42) * 13
+          )
+        );
+        const mistSheets = [
+          [
+            [-90, 515, 169, 21, 23],
+            [533, 478, 151, 29, -24],
+            [1110, 672, 183, 28, 31],
+            [1870, 456, 155, 21, -29]
+          ],
+          [
+            [90, 495, 103, 21, 22],
+            [604, 624, 129, 34, -31],
+            [1325, 474, 146, 20, 26],
+            [1870, 535, 111, 28, -26]
+          ],
+          [
+            [-131, 545, 57, 17, -22],
+            [516, 528, 61, 17, 24],
+            [1103, 576, 88, 32, -25],
+            [1814, 435, 63, 18, 20]
+          ]
+        ];
+        const table = new Uint8Array(N * 8 * 4);
+        let topOfSilk = 1;
+        function pack16(data, o, value) {
+          const h = Math.round(clamp(value, 0, 65535));
+          data[o] = h >> 8;
+          data[o + 1] = h & 255;
+        }
+        function mistAt(k, x) {
+          for (const [start, length, alt, thick, rise] of mistSheets[k]) {
+            const t = mod(x - start, PERIOD) / length;
+            if (t >= 1) continue;
+            const feather = Math.sin(Math.PI * t) ** 0.72;
+            const y =
+              alt +
+              rise * Math.sin(TAU * t - 0.52) * feather +
+              6.8 * Math.sin(3 * Math.PI * t + 0.66) * feather +
+              15 * (fbm(x / PERIOD, t * 3.1, 29, 79 + k) - 0.48) * feather +
+              2.7 * (noise(x / PERIOD, t * 4, 75, 126 + k) - 0.5) * feather +
+              2.1 * Math.sin(TAU * t * 3 + 0.77) * feather;
+            return [
+              y,
+              thick * feather * (0.64 + 0.36 * Math.sin(4.5 * t + 0.68)),
+              feather *
+                (0.81 + 0.19 * Math.sin(5 * t + 0.41)) *
+                (0.27 + 0.72 * smooth((fbm(x / PERIOD, t * 2.3, 13, 108 + k) - 0.25) / 0.48))
+            ];
+          }
+          return [0, 0, 0];
+        }
+        for (let i = 0; i < N; i++)
+          for (let r = 0; r < 8; r++) {
+            const o = (r * N + i) * 4;
+            if (r < 3) {
+              const m = mountains[r];
+              pack16(table, o, m.sky[i] * 128);
+              pack16(table, o + 2, (m.arcs[i] / m.arcLength - i / N + 0.5) * 65535);
+            } else if (r < 5) {
+              pack16(table, o, distant[r - 3][i] * 128);
+            } else {
+              const [y, w, a] = mistAt(r - 5, (i * PERIOD) / N);
+              topOfSilk = Math.max(topOfSilk, y);
+              pack16(table, o, y * 128);
+              table[o + 2] = Math.round(w * 5);
+              table[o + 3] = Math.round(a * 255);
+            }
+          }
+
+        const vertexSource = `
+attribute vec2 aPosition;
+varying vec2 uv;
+void main(){uv=.5+.5*aPosition;gl_Position=vec4(aPosition,0.,1.);}`;
+        const shared = `
+precision highp float;
+varying vec2 uv;
+uniform vec4 uView,uBand;
+uniform vec3 uPan,uAir;
+uniform float uTime,uMode,uRatio,uLight,uStill,uWaterPan;
+const float P=2400.,HMAX=352.,TURN=6.283185307;
+float sat(float a){return clamp(a,0.,1.);}
+float bank(float x){
+  float u=(x-uView.w)/(P*uView.z)+uWaterPan;
+  return uView.y+uView.z*(1.85*sin(TURN*u*4.+.44*sin(TURN*u*7.))+1.17*sin(TURN*u*11.+1.4)+.55*sin(TURN*u*28.));
+}
+vec3 skyAt(vec2 p){
+  float t=sat(p.y/uView.y);
+  float daylight=.5+.5*sin(((p.x-uView.w)/(P*uView.z)+uAir.x)*TURN+uTime*uStill*.027);
+  vec3 a=mix(vec3(.0392,.0510,.0706),vec3(.9176,.8941,.8431),uMode);
+  vec3 b=mix(vec3(.0745,.1059,.1412),vec3(.8627,.8275,.7569),uMode);
+  vec3 sky=mix(a,b,t*(.7+.3*t));
+  return mix(sky,mix(vec3(.65,.74,.68),vec3(.993,.942,.802),.23+.46*daylight),pow(t,3.7)*(.105+.10*daylight)*mix(1.,.56,uMode));
+}`;
+        const landscapeSource =
+          shared +
+          `uniform sampler2D uNight,uDay,uInk,uTable;
+uniform vec3 uArcs,uHover,uRows;
+uniform vec3 uPlate;
+uniform vec4 uWaveA[3],uWaveB[3];
+uniform float uTravel;
+vec4 lookup(float x,float row){return texture2D(uTable,vec2(fract(x)+.5/2048.,(row+.5)/8.));}
+float number(vec2 rg){return dot(rg,vec2(65280.,255.));}
+vec2 ridge(float x,float row,float length){
+  vec4 t=lookup(x,row);
+  return vec2(number(t.rg)/128.,fract(x+number(t.ba)/65535.-.5)*length);
+}
+float cloud(float x,float h,float row,float aa){
+  vec4 ink=lookup(x,row);float thick=ink.b*51.;if(thick<.2)return 0.;
+  float below=number(ink.rg)/128.-h/uBand.w;aa/=uBand.w;
+  float cut=smoothstep(-aa,aa,below),fraction=below/max(.12,thick);
+  float hem=1.-smoothstep(0.,1.,fraction);
+  float folded=exp(-8.*abs(fraction-.36-.14*sin(TURN*x*7.)));
+  return ink.a*cut*(hem*hem*.45+hem*folded*.14);
+}
+vec3 laySilk(vec3 c,float x,float h,float row,float aa){
+  vec3 silk=mix(vec3(.67,.741,.701),vec3(.977,.943,.850),uMode);
+  return mix(c,silk,cloud(x,h,row,aa));
+}
+float pulse(vec4 event,vec2 along,float extent){
+  float age=event.z-event.w;if(age<0.||event.z>=1.5)return 0.;
+  float delta=abs(event.x-along.x);delta=min(delta,extent-delta);
+  float down=mix(abs(along.y-event.y),along.y+event.y,smoothstep(0.,68.,delta));
+  float lag=age-(delta+down)*uTravel;
+  return smoothstep(-.012,.020,lag)*(1.-smoothstep(.038,.205,lag))*(1.-smoothstep(1.12,1.5,event.z));
+}
+vec4 painted(vec2 p){
+  if(uMode<=.0001)return texture2D(uNight,p);
+  if(uMode>=.9999)return texture2D(uDay,p);
+  return mix(texture2D(uNight,p),texture2D(uDay,p),uMode);
+}
+vec3 place(vec3 under,float x,float h,vec2 crest,float k,float row,float extent,vec2 pixel,vec4 ea,vec4 eb){
+  if(h>crest.x+1.1/uRatio/uView.z||h<-.5)return under;
+  float travel=max(0.,crest.x-h);
+  float touch=(1.-smoothstep(4.,120.,length(pixel-uHover.xy)))*uHover.z;
+  float wave=max(pulse(ea,vec2(crest.y,travel),extent),pulse(eb,vec2(crest.y,travel),extent));
+  float flow=max(touch*.85,wave*.44);
+  // 使用两侧出血的预乘画层。墨骨则以一次烘焙的距离、压力、余墨量三个量合成。
+  vec2 uv0=vec2((1.+x*(uPlate.x-2.))/uPlate.x,(row+1.+max(0.,h)*uPlate.y)/uPlate.z);
+  vec4 fixedInk=painted(uv0);
+  if(fixedInk.a<.003)return under;
+  vec3 c=fixedInk.rgb/max(.002,fixedInk.a);
+  if(flow>.004){
+    vec2 d=flow*vec2(.68*sin(crest.y*.031+h*.054-uTime*2.),.61*cos(crest.y*.023-h*.044-uTime*2.4));
+    vec2 shifted=vec2((1.+fract(x+d.x/P)*(uPlate.x-2.))/uPlate.x,(row+1.+max(0.,h+d.y)*uPlate.y)/uPlate.z);
+    vec4 film=painted(shifted);c=mix(c,film.rgb/max(.002,film.a),min(1.,film.a*5.)*flow*.63);
+  }
+  vec4 nib=texture2D(uInk,vec2(x,(k*640.+clamp(h/HMAX,.0008,.9992)*640.)/2048.));
+  float halfWidth=nib.a*.55,aa=.52/uRatio;
+  float line=(1.-smoothstep(max(0.,halfWidth-aa),halfWidth+aa,nib.g*2.6*uView.z))*nib.b;
+  float nx=nib.r*2.-1.;
+  c+=uLight*nx*vec3(.163,.147,.109);
+  vec3 bone=mix(vec3(.103,.112,.145),vec3(.147,.142,.168),uMode);
+  c=mix(c,bone,line*(k<.5?.56:.79));
+  float lum=dot(c,vec3(.22,.65,.13));
+  c=mix(vec3(lum),c,1.+wave*.72+touch*.21)+max(wave,touch*.63)*vec3(.068,.052,.033);
+  float edge=(1.-smoothstep(.08,1.15,travel*uView.z))*(.42+.43*smoothstep(-.2,.86,nx));
+  c=mix(c,vec3(.947,.882,.720),max(wave,touch)*max(line,edge)*.96);
+  return under*(1.-fixedInk.a)+c*fixedInk.a;
+}
+void main(){
+  vec2 p=vec2(uv.x*uView.x,uBand.y-uv.y*uBand.z);
+  float world=(p.x-uView.w)/(P*uView.z),h=(uView.y-p.y)/uView.z;
+  float aa=.65/(uView.z*uRatio);
+  vec3 pos=fract(vec3(world)+uPan);
+  vec3 color=skyAt(p);float silk=world+uAir.z,fx=world+uAir.y;
+  vec3 valley=mix(vec3(.337,.405,.396),vec3(.869,.852,.741),uMode);
+  color=mix(color,valley,exp(-max(0.,h)/55.)*(.46+.10*sin(TURN*fx*3.)));
+  for(int j=0;j<2;j++){
+    float top=number(lookup(fx,float(j)+3.).rg)/128.;
+    vec3 range=j==0?mix(vec3(.244,.297,.314),vec3(.671,.706,.662),uMode):mix(vec3(.250,.326,.332),vec3(.606,.673,.609),uMode);
+    float base=13.+10.*sin(TURN*fx*4.+float(j));
+    float wash=smoothstep(base,top+12.,h);
+    float ink=(1.-smoothstep(-aa,aa,h-top))*wash;
+    float found=smoothstep(-.28,.78,sin(TURN*fx*7.+float(j))+.27*sin(TURN*fx*19.));
+    range=mix(range,skyAt(p),.21+.24*smoothstep(0.,85.,top-h));
+    range=mix(range,vec3(.75,.757,.674),found*(1.-smoothstep(.12,1.02,abs(h-top)*uView.z))*.21);
+    color=mix(color,range,ink*.85);
+  }
+  color=laySilk(color,silk,h,5.,aa);
+  color=place(color,pos.x,h,ridge(pos.x,0.,uArcs.x),0.,uRows.x,uArcs.x,p,uWaveA[0],uWaveB[0]);
+  color=laySilk(color,silk,h,6.,aa);
+  color=place(color,pos.y,h,ridge(pos.y,1.,uArcs.y),1.,uRows.y,uArcs.y,p,uWaveA[1],uWaveB[1]);
+  color=laySilk(color,silk,h,7.,aa);
+  color=place(color,pos.z,h,ridge(pos.z,2.,uArcs.z),2.,uRows.z,uArcs.z,p,uWaveA[2],uWaveB[2]);
+  float delta=(bank(p.x)-p.y)/uView.z;
+  float beach=(1.-smoothstep(.35,3.55,delta))*(.28+.10*sin(TURN*fx*11.));
+  vec3 sand=mix(vec3(.365,.388,.334),vec3(.816,.794,.677),uMode);
+  gl_FragColor=vec4(mix(color,sand,beach),1.);
+}
+`;
+        const softenSource = `
+precision highp float;
+varying vec2 uv;
+uniform sampler2D uSource;
+uniform vec2 uFootprint;
+void main(){
+  vec2 d=uFootprint;
+  vec3 c=texture2D(uSource,uv).rgb*.25;
+  c+=.125*(texture2D(uSource,uv+vec2(d.x,0.)).rgb+texture2D(uSource,uv-vec2(d.x,0.)).rgb+
+           texture2D(uSource,uv+vec2(0.,d.y)).rgb+texture2D(uSource,uv-vec2(0.,d.y)).rgb);
+  c+=.0625*(texture2D(uSource,uv+d).rgb+texture2D(uSource,uv-d).rgb+
+            texture2D(uSource,uv+vec2(d.x,-d.y)).rgb+texture2D(uSource,uv+vec2(-d.x,d.y)).rgb);
+  gl_FragColor=vec4(c,1.);
+}`;
+        const riverSource =
+          shared +
+          `
+uniform sampler2D uLand,uSilvery,uSoft,uGrain;
+uniform vec4 uWake[4];
+uniform float uHeight;
+vec3 printed(vec2 p){
+  if(p.y<uBand.x)return skyAt(p);
+  return texture2D(uLand,vec2(clamp(p.x,.36,uView.x-.36)/uView.x,clamp((uBand.y-p.y)/uBand.z,0.,1.))).rgb;
+}
+float cell(vec2 id){return fract(texture2D(uGrain,(mod(id,256.)*3.71+.5)/1024.).b*5.83);}
+void main(){
+  vec2 p=vec2(uv.x*uView.x,(1.-uv.y)*uHeight);
+  float bankY=p.y<uView.y-4.*uView.z?uView.y:bank(p.x);
+  float dist=p.y-bankY,aa=.66/uRatio;
+  vec3 color;
+  if(dist<0.)color=printed(p);
+  else{
+    float depth=sat(dist/(uHeight-bankY)),x=(p.x-uView.w)/(P*uView.z)+uWaterPan;
+    float time=uTime*uStill;
+    float stir=sin(dist*(.47-.17*depth)+1.24*sin(x*TURN*6.+time*.17)-time*.73)+.48*sin(dist*.79+x*TURN*11.+time*.51);
+    float dx=stir*(.12+3.8*pow(depth,.85)),dy=(.19+depth*1.16)*sin(dist*.31+1.5*cos(x*TURN*4.)-time*.57);
+    float wake=0.,slit=0.;
+    for(int j=0;j<4;j++){
+      vec4 r=uWake[j];if(r.z<0.||r.z>=.88)continue;
+      float reach=(6.+147.*(1.-pow(1.-r.z/.88,2.)))*r.w;
+      float q=(p.x-r.x)/reach,tip=max(0.,1.-q*q);
+      float rr=abs(p.y-r.y-r.z*sin(q*3.14159)*1.45)-(1.+3.8*r.z)*tip;
+      float line=(1.-smoothstep(.15,.57+aa,abs(rr)))*smoothstep(0.,.35,tip)*(1.-smoothstep(.21,.88,r.z));
+      wake=max(wake,line);slit=max(slit,line*step(p.y,r.y));dx+=q*line*2.5;
+    }
+    vec2 source=vec2(p.x+dx,bankY-dist*(.985-.055*depth)+dy);
+    // 依水深连续混合三档真实低通足迹。近岸使用原画，江心取各向异性的柔化倒影。
+    float rough=smoothstep(.03,.91,depth);
+    vec2 sampleUV=vec2(clamp(source.x,.38,uView.x-.38)/uView.x,clamp((uBand.y-source.y)/uBand.z,0.,1.));
+    vec3 sharp=texture2D(uLand,sampleUV).rgb,soft=texture2D(uSilvery,sampleUV).rgb;
+    vec2 shear=vec2((.8+2.7*depth)/uView.x,.59/uBand.z)*rough;
+    vec3 broad=texture2D(uSoft,sampleUV).rgb*.50+.25*(texture2D(uSoft,sampleUV+shear).rgb+texture2D(uSoft,sampleUV-shear).rgb);
+    vec3 reflection=mix(mix(sharp,soft,smoothstep(.015,.44,depth)),broad,rough);
+    if(source.y<uBand.x)reflection=skyAt(source);
+    vec3 bed=mix(mix(vec3(.125,.208,.220),vec3(.041,.078,.096),depth),mix(vec3(.749,.785,.716),vec3(.651,.717,.660),depth),uMode);
+    color=mix(bed,reflection*mix(vec3(.86,.94,.98),vec3(.96,.985,.955),uMode),mix(.74,.065,pow(depth,.76)));
+    float rows=28.+(uHeight-bankY)*.095,row=sqrt(depth+.003)*rows,r=floor(row);
+    float count=max(1.,floor(P*uView.z/mix(104.,218.,depth)+.5));
+    float col=x*count+cell(vec2(r,19.))*18.;vec2 id=vec2(mod(floor(col),count),r);
+    float n=cell(id),m=cell(id+vec2(79.,11.)),q=(fract(col)-.5)/(.065+.31*m);
+    float taper=sat(1.-q*q),mid=(r+.21+.55*n)/rows;
+    float lineY=(mid*mid-.003)*(uHeight-bankY)+.85*sin(q*2.1+n*3.)*taper;
+    float glint=(1.-smoothstep(max(0.,.30*taper-aa),.48*taper+aa,abs(dist-lineY)))*smoothstep(0.,.4,taper);
+    vec3 sheen=mix(vec3(.85,.86,.74),vec3(.981,.954,.818),uMode);
+    color=mix(color,n>.30?sheen:bed*.70,glint*(.075+.24*m)*(.78+.22*dot(reflection,vec3(.24,.62,.14))));
+    color=mix(color,sheen,wake*.81);color=mix(color,bed*.55,slit*.48);
+  }
+  float shoreInk=(1.-smoothstep(.16,.42+aa,abs(dist)))*(.65+.15*sin((p.x/uView.z/P+uWaterPan)*TURN*17.));
+  color=mix(color,mix(vec3(.82,.84,.71),vec3(.982,.96,.87),uMode),shoreInk);
+  // 绢底第二次轻印，填补无颜料的天空和江面。颜料内部的吃色纹已经与矿色一同烘焙。
+  vec3 thread=texture2D(uGrain,(p+vec2(19.,31.))/396.).rgb;
+  vec3 inDark=color+(.12+thread.b*.035)*(2.*thread.r-1.)*color*(1.-color);
+  vec3 inDay=color*(1.-(.009+.023*thread.g+.014*(1.-thread.r)));
+  color=mix(inDark,inDay,uMode);
+  gl_FragColor=vec4(clamp(color,vec3(.020,.024,.032),vec3(.978,.968,.937)),1.);
+
+}`;
+        let W = 1,
+          H = 1,
+          shore = 1,
+          scale = 1,
+          anchor = 0,
+          ratio = 1,
+          bandTop = 0,
+          bandBottom = 1,
+          lastDpr = 0;
+        let camera = 0,
+          destination = 0,
+          yaw = 0,
+          mode = 0,
+          modeFrom = 0,
+          modeGoal = 0,
+          modeStart = -4;
+        let drag = null,
+          hover = { x: -999, y: -999, time: -5 },
+          waves = [],
+          wakes = [],
+          lastWake = -5;
+        let previous = 0,
+          frame = 0,
+          lost = false,
+          dirty = true,
+          limit = 8192;
+        const phase = (r) => mod(FOCUS + camera * r, PERIOD);
+        const arcAt = (m, x) => {
+          const f = (mod(x, PERIOD) * N) / PERIOD,
+            i = Math.floor(f);
+          return mix(m.arcs[i], m.arcs[i + 1], f - i);
+        };
+        function makeRange(data, rate) {
+          const bins = Float32Array.from({ length: N / 32 }, (_, i) =>
+            Math.max(...data.subarray(i * 32, (i + 1) * 32))
+          );
+          return { data, bins, rate };
+        }
+        const ranges = [
+          ...mountains.map((m) => makeRange(m.sky, m.rate)),
+          ...distant.map((d) => makeRange(d, 0.15))
+        ];
+        function highest(range, s) {
+          const first = ((phase(range.rate) - anchor / s) * N) / PERIOD,
+            last = first + ((W / s) * N) / PERIOD;
+          if (last - first >= N) return Math.max(...range.bins);
+          let top = Math.max(
+              ridgeSample(range.data, (first * PERIOD) / N),
+              ridgeSample(range.data, (last * PERIOD) / N)
+            ),
+            i = Math.ceil(first);
+          while (i <= last) {
+            if ((i & 31) === 0 && i + 31 <= last) {
+              top = Math.max(top, range.bins[(i & (N - 1)) >> 5]);
+              i += 32;
+            } else {
+              top = Math.max(top, range.data[i & (N - 1)]);
+              i++;
+            }
+          }
+          return top;
+        }
+        // 在低矮山段只作整体等比取景，同时保留近四成天空。笔、山脊与水影共用这组坐标。
+        function frameLandscape() {
+          const base = (shore - H * 0.388) / globalPeak;
+          let s = base;
+          for (let n = 0; n < 24; n++) {
+            const maximum = Math.max(...ranges.map((r) => highest(r, s)));
+            const next = Math.max(base, (shore - H * 0.438) / maximum);
+            if (next - s < 0.0001) break;
+            s = next;
+          }
+          scale = s;
+        }
+        const silkScale = () => Math.min(1, (shore - H * 0.389) / (topOfSilk * scale));
+        function bankAt(x) {
+          const u = (x - anchor) / (scale * PERIOD) + phase(0.85) / PERIOD;
+          return (
+            shore +
+            scale *
+              (1.85 * Math.sin(TAU * u * 4 + 0.44 * Math.sin(TAU * u * 7)) +
+                1.17 * Math.sin(TAU * u * 11 + 1.4) +
+                0.55 * Math.sin(TAU * u * 28))
+          );
+        }
+        function nearest(m, x, h) {
+          const world = phase(m.rate) + (x - anchor) / scale;
+          let best = Infinity,
+            hitX = world,
+            hitH = h;
+          for (const path of m.guides)
+            for (let i = 1; i < path.length; i++) {
+              const a = path[i - 1],
+                b = path[i],
+                dx = b[0] - a[0],
+                dy = b[1] - a[1],
+                rx = fold(world, a[0]),
+                ry = h - a[1];
+              const f = clamp((rx * dx + ry * dy) / (dx * dx + dy * dy || 1)),
+                ox = rx - f * dx,
+                oy = ry - f * dy,
+                dist = ox * ox + oy * oy;
+              if (dist < best) {
+                best = dist;
+                hitX = world - ox;
+                hitH = h - oy;
+              }
+            }
+          return [
+            arcAt(m, hitX),
+            Math.max(0, ridgeSample(m.sky, hitX) - hitH),
+            Math.sqrt(best),
+            x + (hitX - world) * scale,
+            hitH
+          ];
+        }
+        const secondsPerUnit = () => scale / Math.max(565, W * 0.94);
+        function release(x, y) {
+          const time = clock(),
+            bank = bankAt(x),
+            h = (shore - (y > bank ? 2 * bank - y : y)) / scale;
+          const guesses = mountains.map((m) => nearest(m, x, h));
+          let hit = -1;
+          for (const m of mountains) if (h <= ridgeSample(m.sky, phase(m.rate) + (x - anchor) / scale)) hit = m.k;
+          if (hit < 0) hit = guesses.reduce((a, v, i) => (v[2] < guesses[a][2] ? i : a), 0);
+          const source = guesses[hit],
+            starts = mountains.map((m) => (m.k === hit ? source : nearest(m, source[3], source[4])));
+          source[2] = 0;
+          waves = waves.filter((w) => time - w.time < 1.5).slice(-1);
+          waves.push({ time, starts });
+          bloomButton.classList.add('lit');
+        }
+        function wake(x, y, t) {
+          if (t - lastWake < 0.105) return;
+          lastWake = t;
+          wakes = wakes.filter((e) => t - e.time < 0.88).slice(-3);
+          wakes.push({
+            x: (x - anchor) / scale + camera * 0.85,
+            y: (y - shore) / (H - shore),
+            time: t,
+            size: 0.8 + 0.2 * Math.min(1, W / 650)
+          });
+        }
+        function brush(x, y, time) {
+          if (y > bankAt(x)) {
+            wake(x, y, time);
+            return;
+          }
+          const h = (shore - y) / scale;
+          if (mountains.some((m) => h <= ridgeSample(m.sky, phase(m.rate) + (x - anchor) / scale)))
+            hover = { x, y, time };
+        }
+        let gl = canvas.getContext('webgl', {
+            alpha: false,
+            depth: false,
+            stencil: false,
+            antialias: false,
+            preserveDrawingBuffer: false,
+            powerPreference: 'high-performance'
+          }),
+          gpu = null,
+          soft = null;
+        function program(fragment, names) {
+          const prog = gl.createProgram();
+          for (const [kind, src] of [
+            [gl.VERTEX_SHADER, vertexSource],
+            [gl.FRAGMENT_SHADER, fragment]
+          ]) {
+            const shader = gl.createShader(kind);
+            gl.shaderSource(shader, src);
+            gl.compileShader(shader);
+            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) throw Error(gl.getShaderInfoLog(shader));
+            gl.attachShader(prog, shader);
+            gl.deleteShader(shader);
+          }
+          gl.linkProgram(prog);
+          if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw Error(gl.getProgramInfoLog(prog));
+          const u = {};
+          for (const name of [
+            ...'uView uBand uPan uAir uTime uRatio uMode uLight uStill uWaterPan'.split(' '),
+            ...names.split(' ')
+          ])
+            u[name] = gl.getUniformLocation(prog, name);
+          return { prog, u, a: gl.getAttribLocation(prog, 'aPosition') };
+        }
+        function texture(unit, w, h, data, repeat) {
+          const t = gl.createTexture();
+          gl.activeTexture(gl.TEXTURE0 + unit);
+          gl.bindTexture(gl.TEXTURE_2D, t);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, repeat ? gl.REPEAT : gl.CLAMP_TO_EDGE);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, unit === 4 ? gl.REPEAT : gl.CLAMP_TO_EDGE);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
+          return t;
+        }
+        function initGPU() {
+          limit = Math.min(gl.getParameter(gl.MAX_TEXTURE_SIZE), ...gl.getParameter(gl.MAX_VIEWPORT_DIMS));
+          if (limit < 2048) throw Error('Texture capacity');
+          const art = program(
+            landscapeSource,
+            'uNight uDay uInk uTable uArcs uHover uWaveA uWaveB uTravel uRows uPlate'
+          );
+          const river = program(riverSource, 'uLand uSilvery uSoft uGrain uWake uHeight');
+          const soften = program(softenSource, 'uSource uFootprint');
+          const quad = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+          // 这个全屏三角形只负责调用像素程序，山体本身由高度场逐点投影。
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+          const plateWidth = Math.min(limit, PAINT_W + 2),
+            paintDensity = (plateWidth - 2) / PERIOD;
+          const heights = mountains.map((m) => Math.ceil(m.prints[0].h * paintDensity));
+          const rows = heights.map((_, i) => heights.slice(0, i).reduce((a, h) => a + h + 2, 0));
+          const plateHeight = rows[2] + heights[2] + 2;
+          gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+          for (let s = 0; s < 2; s++) {
+            texture(s, plateWidth, plateHeight, null, false);
+            for (const m of mountains) {
+              const src = m.prints[s].c,
+                h = heights[m.k],
+                inside = plateWidth - 2,
+                padded = offscreen(plateWidth, h + 2);
+              const g = padded.g;
+              g.drawImage(src, 1, 1, inside, h);
+              // 左右互取一个像素，非二次幂的高分辨率图集同样能无缝环绕。
+              g.drawImage(src, src.width - 1, 0, 1, src.height, 0, 1, 1, h);
+              g.drawImage(src, 0, 0, 1, src.height, inside + 1, 1, 1, h);
+              g.drawImage(padded.c, 0, 1, plateWidth, 1, 0, 0, plateWidth, 1);
+              g.drawImage(padded.c, 0, h, plateWidth, 1, 0, h + 1, plateWidth, 1);
+              gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, rows[m.k], gl.RGBA, gl.UNSIGNED_BYTE, padded.c);
+              padded.c.width = padded.c.height = 1;
+            }
+          }
+          gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+
+          const width = Math.min(PEN_W, limit);
+          texture(2, width, 2048, null, true);
+          for (const m of mountains) {
+            let data = m.inkData;
+            if (width !== PEN_W) {
+              data = new Uint8Array(width * PEN_H * 4);
+              for (let row = 0; row < PEN_H; row++)
+                for (let col = 0; col < width; col++) {
+                  const j = (row * PEN_W + Math.floor(((col + 0.5) * PEN_W) / width)) * 4,
+                    o = (row * width + col) * 4;
+                  for (let ch = 0; ch < 4; ch++) data[o + ch] = m.inkData[j + ch];
+                }
+            }
+            gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, m.k * PEN_H, width, PEN_H, gl.RGBA, gl.UNSIGNED_BYTE, data);
+          }
+          texture(3, N, 8, table, true);
+          texture(4, LOOM, LOOM, cloth.data, true);
+          const land = texture(5, 1, 1, null, false);
+          function framebuffer(t) {
+            const f = gl.createFramebuffer();
+            gl.bindFramebuffer(gl.FRAMEBUFFER, f);
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t, 0);
+            return f;
+          }
+          const target = framebuffer(land),
+            levels = [2.25, 7.8].map((divisor, j) => {
+              const t = texture(6 + j, 1, 1, null, false);
+              return { t, target: framebuffer(t), divisor, w: 1, h: 1 };
+            });
+          gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+          gl.useProgram(art.prog);
+          ['uNight', 'uDay', 'uInk', 'uTable'].forEach((v, i) => gl.uniform1i(art.u[v], i));
+          gl.uniform3f(art.u.uArcs, ...mountains.map((m) => m.arcLength));
+          gl.uniform3f(art.u.uRows, ...rows);
+          gl.uniform3f(art.u.uPlate, plateWidth, paintDensity, plateHeight);
+          gl.useProgram(river.prog);
+          gl.uniform1i(river.u.uGrain, 4);
+          gl.uniform1i(river.u.uLand, 5);
+          gl.uniform1i(river.u.uSilvery, 6);
+          gl.uniform1i(river.u.uSoft, 7);
+          gpu = { art, river, land, target, quad, soften, levels };
+          gl.disable(gl.BLEND);
+          gl.disable(gl.DEPTH_TEST);
+        }
+        function fitSignature() {
+          const available = H * 0.343 - signature.getBoundingClientRect().top;
+          signature.style.transform =
+            'scale(' + clamp(available / Math.max(1, signature.offsetHeight), 0.01, 1) + ')';
+        }
+        function resize() {
+          W = canvas.clientWidth;
+          H = canvas.clientHeight;
+          if (!W || !H) return;
+          lastDpr = window.devicePixelRatio || 1;
+          ratio = Math.min(lastDpr, limit / W, limit / H);
+          canvas.width = Math.max(1, Math.round(W * ratio));
+          canvas.height = Math.max(1, Math.round(H * ratio));
+          ratio = canvas.height / H;
+          shore = H * 0.747;
+          anchor = W * mix(0.66, 0.695, smooth((W / H - 0.68) / 0.57));
+          bandTop = Math.floor(canvas.height * 0.32) / ratio;
+          bandBottom = Math.min(H, Math.ceil(canvas.height * 0.772) / ratio);
+          frameLandscape();
+          fitSignature();
+          if (gpu) {
+            gl.activeTexture(gl.TEXTURE5);
+            gl.bindTexture(gl.TEXTURE_2D, gpu.land);
+            gl.texImage2D(
+              gl.TEXTURE_2D,
+              0,
+              gl.RGBA,
+              canvas.width,
+              Math.max(1, Math.round((bandBottom - bandTop) * ratio)),
+              0,
+              gl.RGBA,
+              gl.UNSIGNED_BYTE,
+              null
+            );
+            gpu.levels.forEach((level, j) => {
+              level.w = Math.max(1, Math.ceil(W / level.divisor));
+              level.h = Math.max(1, Math.ceil((bandBottom - bandTop) / level.divisor));
+              gl.activeTexture(gl.TEXTURE0 + 6 + j);
+              gl.bindTexture(gl.TEXTURE_2D, level.t);
+              gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, level.w, level.h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+            });
+          }
+          if (soft) resizeSoft();
+          dirty = true;
+        }
+        const waveA = new Float32Array(12),
+          waveB = new Float32Array(12),
+          wakeData = new Float32Array(16);
+        function uniforms(pipe, time) {
+          const u = pipe.u;
+          gl.useProgram(pipe.prog);
+          gl.bindBuffer(gl.ARRAY_BUFFER, gpu.quad);
+          gl.enableVertexAttribArray(pipe.a);
+          gl.vertexAttribPointer(pipe.a, 2, gl.FLOAT, false, 0, 0);
+          gl.uniform4f(u.uView, W, shore, scale, anchor);
+          gl.uniform4f(u.uBand, bandTop, bandBottom, bandBottom - bandTop, silkScale());
+          gl.uniform3f(u.uPan, phase(0.4) / PERIOD, phase(0.6) / PERIOD, phase(0.8) / PERIOD);
+          gl.uniform3f(
+            u.uAir,
+            phase(0.05) / PERIOD,
+            phase(0.15) / PERIOD,
+            mod(phase(0.25) + (reduce.matches ? 0 : time * 1.65), PERIOD) / PERIOD
+          );
+          gl.uniform1f(u.uTime, time);
+          gl.uniform1f(u.uRatio, ratio);
+          gl.uniform1f(u.uMode, mode);
+          gl.uniform1f(u.uLight, yaw);
+          gl.uniform1f(u.uStill, reduce.matches ? 0 : 1);
+          gl.uniform1f(u.uWaterPan, phase(0.85) / PERIOD);
+        }
+        function drawGPU(time, touch, repaint = true) {
+          const { art, river, target } = gpu;
+          if (repaint) {
+            gl.bindFramebuffer(gl.FRAMEBUFFER, target);
+            gl.viewport(0, 0, canvas.width, Math.round((bandBottom - bandTop) * ratio));
+            uniforms(art, time);
+            for (let j = 0; j < 2; j++)
+              for (let k = 0; k < 3; k++) {
+                const e = waves[j],
+                  d = j ? waveB : waveA,
+                  o = k * 4;
+                d[o] = e ? e.starts[k][0] : 0;
+                d[o + 1] = e ? e.starts[k][1] : 0;
+                d[o + 2] = e ? time - e.time : -3;
+                d[o + 3] = e ? e.starts[k][2] * secondsPerUnit() : 0;
+              }
+            gl.uniform4fv(art.u.uWaveA, waveA);
+            gl.uniform4fv(art.u.uWaveB, waveB);
+            gl.uniform3f(art.u.uHover, hover.x, hover.y, touch);
+            gl.uniform1f(art.u.uTravel, secondsPerUnit());
+            gl.drawArrays(gl.TRIANGLES, 0, 3);
+            gl.disableVertexAttribArray(art.a);
+            const blit = gpu.soften;
+            gl.useProgram(blit.prog);
+            gl.enableVertexAttribArray(blit.a);
+            gl.vertexAttribPointer(blit.a, 2, gl.FLOAT, false, 0, 0);
+            gpu.levels.forEach((level, j) => {
+              gl.bindFramebuffer(gl.FRAMEBUFFER, level.target);
+              gl.viewport(0, 0, level.w, level.h);
+              gl.uniform1i(blit.u.uSource, 5 + j);
+              gl.uniform2f(blit.u.uFootprint, 0.66 / level.w, 0.53 / level.h);
+              gl.drawArrays(gl.TRIANGLES, 0, 3);
+            });
+            gl.disableVertexAttribArray(blit.a);
+          }
+          gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+          gl.viewport(0, 0, canvas.width, canvas.height);
+          uniforms(river, time);
+          for (let j = 0; j < 4; j++) {
+            const e = wakes[j],
+              o = j * 4;
+            wakeData[o] = e ? anchor + (e.x - camera * 0.85) * scale : 0;
+            wakeData[o + 1] = e ? shore + e.y * (H - shore) : 0;
+            wakeData[o + 2] = e ? time - e.time : -3;
+            wakeData[o + 3] = e ? e.size : 1;
+          }
+          gl.uniform4fv(river.u.uWake, wakeData);
+          gl.uniform1f(river.u.uHeight, H);
+          gl.drawArrays(gl.TRIANGLES, 0, 3);
+          gl.disableVertexAttribArray(river.a);
+        }
+        // 软件绘制复用同一份分染底稿、曲线笔迹和山脊弧长。每一色绢只印一次。
+        function surface(w, h, read = false) {
+          const c = document.createElement('canvas');
+          c.width = Math.max(1, Math.ceil(w));
+          c.height = Math.max(1, Math.ceil(h));
+          return { c, g: c.getContext('2d', { willReadFrequently: read }) };
+        }
+        const rgb = (c, a = 1) =>
+          'rgba(' + c.map((v) => Math.round(clamp(v) * 255)).join(',') + ',' + clamp(a) + ')';
+        const blend = (a, b, t) => a.map((v, i) => mix(v, b[i], t));
+        function makePlates(m) {
+          const source = m.prints[0],
+            w = source.c.width,
+            h = source.c.height,
+            density = w / PERIOD;
+          const baseScale = clamp((innerHeight * 0.359) / globalPeak, 0.58, 1.8),
+            layer = offscreen(w, h),
+            lift = offscreen(w, h);
+          // 回退路径把同一张提按控制图印在缓存上。这里的墨线与原色版共用透绢蒙版。
+          const imprint = layer.g.createImageData(w, h),
+            light = lift.g.createImageData(w, h);
+          const matte = source.c.getContext('2d').getImageData(0, 0, w, h).data;
+          for (let y = 0; y < h; y++)
+            for (let x = 0; x < w; x++) {
+              const o = (y * w + x) * 4,
+                a = matte[o + 3] / 255;
+              if (a < 0.004) continue;
+              const hWorld = (y + 0.5) / density,
+                n = (Math.floor((hWorld * PEN_H) / CEILING) * PEN_W + Math.floor(((x + 0.5) * PEN_W) / w)) * 4;
+              const half = (m.inkData[n + 3] / 255) * 0.55,
+                d = (m.inkData[n + 1] / 255) * 2.6 * baseScale;
+              const coverage =
+                ((1 - smooth((d - Math.max(0, half - 0.35)) / (half + 0.35 - Math.max(0, half - 0.35)))) *
+                  m.inkData[n + 2]) /
+                255;
+              imprint.data[o] = 41;
+              imprint.data[o + 1] = 43;
+              imprint.data[o + 2] = 53;
+              imprint.data[o + 3] = 255 * coverage * (m.k === 0 ? 0.57 : 0.77);
+              light.data[o] = mix(matte[o], 239, 0.42 + coverage * 0.48);
+              light.data[o + 1] = mix(matte[o + 1], 223, 0.42 + coverage * 0.48);
+              light.data[o + 2] = mix(matte[o + 2], 185, 0.42 + coverage * 0.48);
+              light.data[o + 3] = 255 * a * (0.27 + 0.72 * coverage);
+            }
+          layer.g.putImageData(imprint, 0, 0);
+          lift.g.putImageData(light, 0, 0);
+          m.plates = m.prints.map((p) => {
+            const sheet = offscreen(w, h);
+            sheet.g.drawImage(p.c, 0, 0);
+            sheet.g.globalCompositeOperation = 'source-atop';
+            sheet.g.drawImage(layer.c, 0, 0);
+            return { c: sheet.c, h: p.h };
+          });
+          m.plates.push({ c: lift.c, h: source.h });
+          layer.c.width = layer.c.height = 1;
+          const ww = 640,
+            hh = Math.ceil(((m.peak + 2) * ww) / PERIOD);
+          m.sheen = [0, 1].map((inv) => {
+            const s = offscreen(ww, hh),
+              im = s.g.createImageData(ww, hh);
+            for (let j = 0; j < hh; j++)
+              for (let i = 0; i < ww; i++) {
+                const x = ((i + 0.5) / ww) * PERIOD,
+                  alt = ((j + 0.5) / ww) * PERIOD,
+                  crest = ridgeSample(m.sky, x);
+                if (alt > crest) continue;
+                const cx = Math.floor((x * PEN_W) / PERIOD),
+                  cy = Math.floor((alt * PEN_H) / CEILING),
+                  o = (j * ww + i) * 4;
+                const val = m.inkData[(cy * PEN_W + cx) * 4];
+                im.data[o] = im.data[o + 1] = im.data[o + 2] = inv ? 249 - val * 0.97 : 4 + val * 0.97;
+                im.data[o + 3] = 233 * opacityAt(opacityColumn(m.k, x, crest), alt);
+              }
+            s.g.putImageData(im, 0, 0);
+            return { c: s.c, h: (hh * PERIOD) / ww };
+          });
+        }
+
+        function atmosphere(k, stock) {
+          const height = 270,
+            w = N,
+            s = surface(w, height),
+            im = s.g.createImageData(w, height);
+          for (let i = 0; i < w; i++) {
+            const x = (i * PERIOD) / w,
+              isCloud = k >= 2;
+            const info = isCloud ? mistAt(k - 2, x) : [distant[k][i], 0, 1];
+            const [top, thick, amount] = info;
+            if (top <= 0) continue;
+            const bottom = isCloud ? Math.max(0, Math.floor(top - thick - 1)) : 0;
+            const color = isCloud
+              ? stock
+                ? [0.995, 0.97, 0.89]
+                : [0.66, 0.77, 0.744]
+              : stock
+                ? k
+                  ? [0.601, 0.678, 0.612]
+                  : [0.662, 0.708, 0.668]
+                : k
+                  ? [0.206, 0.294, 0.297]
+                  : [0.18, 0.242, 0.261];
+            for (let j = bottom; j < Math.min(height, Math.ceil(top + 1)); j++) {
+              const d = top - j - 0.5,
+                t = d / Math.max(0.12, thick),
+                hem = 1 - smooth(t);
+              const alpha = isCloud
+                ? amount *
+                  smooth(d + 0.5) *
+                  (hem * hem * 0.42 +
+                    hem * Math.exp(-8 * Math.abs(t - 0.36 - 0.14 * Math.sin(((TAU * x) / PERIOD) * 7))) * 0.1)
+                : clamp(d + 0.5) *
+                  0.84 *
+                  smooth(
+                    (j - 13 - 10 * Math.sin(((TAU * x) / PERIOD) * 4 + k)) /
+                      (top + 12 - 13 - 10 * Math.sin(((TAU * x) / PERIOD) * 4 + k))
+                  );
+              const o = (j * w + i) * 4;
+              for (let ch = 0; ch < 3; ch++) im.data[o + ch] = 255 * color[ch];
+              im.data[o + 3] = alpha * 255;
+            }
+          }
+          s.g.putImageData(im, 0, 0);
+          return { c: s.c, h: height };
+        }
+        function initSoft() {
+          for (const m of mountains) if (!m.plates) makePlates(m);
+          const g = canvas.getContext('2d', { alpha: false });
+          const papers = cloth.ink.map((c) => {
+            const p = g.createPattern(c, 'repeat');
+            p.setTransform(new DOMMatrix([396 / 1024, 0, 0, 396 / 1024, 0, 0]));
+            return p;
+          });
+          soft = {
+            g,
+            land: surface(1, 1),
+            alternate: surface(1, 1),
+            mirror: surface(1, 1),
+            medium: surface(1, 1),
+            broad: surface(1, 1),
+            glow: surface(1, 1),
+            mask: surface(1, 1),
+            air: [0, 1, 2, 3, 4].map((k) => [atmosphere(k, 0), atmosphere(k, 1)]),
+            papers
+          };
+        }
+        function resizeSoft() {
+          const bh = bandBottom - bandTop,
+            water = H - shore + 10 * scale;
+          for (const [name, w, h] of [
+            ['land', W * ratio, bh * ratio],
+            ['alternate', W * ratio, bh * ratio],
+            ['mirror', W * ratio, water * ratio],
+            ['medium', W / 2.25, water / 2.25],
+            ['broad', W / 7.8, water / 7.8],
+            ['glow', W * ratio, bh * ratio],
+            ['mask', W / 7.0, bh / 7.0]
+          ]) {
+            soft[name].c.width = Math.max(1, Math.ceil(w));
+            soft[name].c.height = Math.max(1, Math.ceil(h));
+          }
+          soft.mask.image = soft.mask.g.createImageData(soft.mask.c.width, soft.mask.c.height);
+        }
+        function across(g, plate, origin, vertical = 1) {
+          const from = Math.floor((origin - anchor / scale) / PERIOD),
+            to = Math.floor((origin + (W - anchor) / scale) / PERIOD);
+          g.save();
+          g.translate(anchor - origin * scale, shore);
+          g.scale(scale, -scale * vertical);
+          for (let k = from; k <= to; k++) g.drawImage(plate.c, k * PERIOD, 0, PERIOD, plate.h);
+          g.restore();
+        }
+        // 两色共用形状和透明度。换绢时先分别印出完整且不透明的景带，再只叠合一次，保持透绢山脚的明度。
+        function printSoftLand(time, touch) {
+          const transition = mode > 0 && mode < 1;
+          const stocks = transition ? [0, 1] : [mode < 0.5 ? 0 : 1];
+          const targets = transition ? [soft.land.g, soft.alternate.g] : [soft.land.g];
+          const moving = mod(phase(0.25) + (reduce.matches ? 0 : time * 1.65), PERIOD);
+          for (let i = 0; i < targets.length; i++) {
+            const g = targets[i],
+              stock = stocks[i];
+            g.setTransform(ratio, 0, 0, ratio, 0, -bandTop * ratio);
+            softSky(g, stock);
+            for (let j = 0; j < 2; j++) across(g, soft.air[j][stock], phase(0.15));
+          }
+          for (const m of mountains) {
+            const origin = phase(m.rate);
+            for (let i = 0; i < targets.length; i++) {
+              const g = targets[i],
+                stock = stocks[i];
+              across(g, soft.air[m.k + 2][stock], moving, silkScale());
+              across(g, m.plates[stock], origin);
+              if (Math.abs(yaw) > 0.008) {
+                g.save();
+                g.globalCompositeOperation = 'soft-light';
+                g.globalAlpha = Math.abs(yaw) * 0.61;
+                across(g, m.sheen[yaw < 0 ? 1 : 0], origin);
+                g.restore();
+              }
+            }
+            if (touch || waves.length) {
+              softwareGlow(m, time, touch);
+              for (const g of targets) g.drawImage(soft.glow.c, 0, bandTop, W, bandBottom - bandTop);
+            }
+          }
+          const g = soft.land.g;
+          if (transition) {
+            g.save();
+            g.globalAlpha = mode;
+            g.drawImage(soft.alternate.c, 0, bandTop, W, bandBottom - bandTop);
+            g.restore();
+          }
+          g.fillStyle = rgb(blend([0.36, 0.39, 0.34], [0.81, 0.79, 0.68], mode), 0.3);
+          g.fillRect(0, shore - 0.5 * scale, W, 6 * scale);
+        }
+
+        function softwareGlow(m, time, touch) {
+          if (!touch && !waves.length) return;
+          const fx = soft.glow,
+            mask = soft.mask,
+            w = mask.c.width,
+            h = mask.c.height,
+            bh = bandBottom - bandTop;
+          const im = mask.image,
+            src = phase(m.rate);
+          im.data.fill(0);
+          const speed = secondsPerUnit(),
+            pixelH = bh / h;
+          for (let i = 0; i < w; i++) {
+            const x = ((i + 0.5) / w) * W,
+              dx = x - hover.x;
+            if (!waves.length && Math.abs(dx) > 121) continue;
+            const world = src + (x - anchor) / scale,
+              top = ridgeSample(m.sky, world),
+              arc = arcAt(m, world);
+            const signals = waves.map((e) => {
+              const pos = e.starts[m.k],
+                diff = Math.abs(arc - pos[0]),
+                walk = Math.min(diff, m.arcLength - diff),
+                age = time - e.time;
+              return [
+                age - (walk + pos[2]) * speed,
+                pos[1],
+                smooth(walk / 68),
+                1 - smooth((age - 1.12) / 0.38),
+                age >= pos[2] * speed
+              ];
+            });
+            for (let j = Math.max(0, Math.floor((shore - scale * (top + 3) - bandTop) / pixelH)); j < h; j++) {
+              const y = bandTop + (j + 0.5) * pixelH,
+                alt = (shore - y) / scale;
+              if (alt < 0) break;
+              let value =
+                touch && Math.abs(dx) < 120 ? touch * (1 - smooth((Math.hypot(dx, y - hover.y) - 4) / 116)) : 0;
+              const leg = Math.max(0, top - alt);
+              for (const v of signals) {
+                if (!v[4]) continue;
+                const lag = v[0] - mix(Math.abs(leg - v[1]), leg + v[1], v[2]) * speed;
+                value = Math.max(value, smooth((lag + 0.012) / 0.032) * (1 - smooth((lag - 0.038) / 0.167)) * v[3]);
+              }
+              im.data[(j * w + i) * 4 + 3] = 255 * value;
+            }
+          }
+          mask.g.putImageData(im, 0, 0);
+          const g = fx.g;
+          g.setTransform(1, 0, 0, 1, 0, 0);
+          g.clearRect(0, 0, fx.c.width, fx.c.height);
+          g.setTransform(ratio, 0, 0, ratio, 0, -bandTop * ratio);
+          across(g, m.plates[2], src);
+          g.setTransform(1, 0, 0, 1, 0, 0);
+          g.globalCompositeOperation = 'destination-in';
+          g.drawImage(mask.c, 0, 0, fx.c.width, fx.c.height);
+          g.globalCompositeOperation = 'source-over';
+        }
+        function softSky(g, stock = mode) {
+          const c = g.createLinearGradient(0, 0, 0, shore);
+          c.addColorStop(0, rgb(blend(palette[0][8], palette[1][8], stock)));
+          c.addColorStop(0.61, rgb(blend(palette[0][9], palette[1][9], stock)));
+          const glint =
+            0.135 + 0.032 * Math.sin((phase(0.05) / PERIOD) * TAU + (reduce.matches ? 0 : clock() * 0.027));
+          const horizon = blend(blend(palette[0][9], palette[1][9], stock), [0.85, 0.88, 0.75], glint);
+          const air = blend([0.337, 0.405, 0.396], [0.869, 0.852, 0.741], stock);
+          c.addColorStop(0.87, rgb(blend(horizon, air, 0.08)));
+          c.addColorStop(1, rgb(blend(horizon, air, 0.46)));
+          g.fillStyle = c;
+          g.fillRect(0, 0, W, H);
+        }
+        const waterBrush = Array.from({ length: 285 }, () => [
+          rng() * PERIOD,
+          rng() ** 1.6,
+          5 + rng() ** 2 * 84,
+          0.06 + 0.23 * rng(),
+          rng() * 7
+        ]);
+        function drawSoft(time, touch, repaint = true) {
+          const { g, land, mirror, medium, broad } = soft,
+            bh = bandBottom - bandTop;
+          const waterTop = shore - 6 * scale,
+            wh = H - waterTop;
+          if (repaint) {
+            printSoftLand(time, touch);
+            const mg = mirror.g;
+            mg.setTransform(1, 0, 0, -1, 0, 0);
+            const stride = Math.max(3, Math.round(6 * ratio));
+            for (let px = 0; px < canvas.width; px += stride) {
+              const sw = Math.min(stride, canvas.width - px),
+                b = bankAt((px + sw * 0.5) / ratio);
+              mg.drawImage(
+                land.c,
+                px,
+                0,
+                sw,
+                land.c.height,
+                px,
+                -(2 * b - waterTop - bandTop) * ratio,
+                sw,
+                land.c.height
+              );
+            }
+            medium.g.imageSmoothingQuality = 'high';
+            broad.g.imageSmoothingQuality = 'high';
+            medium.g.drawImage(mirror.c, 0, 0, medium.c.width, medium.c.height);
+            broad.g.drawImage(medium.c, 0, 0, broad.c.width, broad.c.height);
+          }
+          g.setTransform(ratio, 0, 0, ratio, 0, 0);
+          softSky(g);
+          g.drawImage(land.c, 0, bandTop, W, bh);
+          const coast = [],
+            dx = 4;
+          for (let x = -dx; x < W + dx; x += dx) coast.push([x, bankAt(x)]);
+          coast.push([W + dx, bankAt(W + dx)]);
+          g.save();
+          g.beginPath();
+          spline(g, coast, true);
+          g.quadraticCurveTo(W + dx, H, W + dx, H);
+          g.quadraticCurveTo(-dx, H, -dx, H);
+          g.closePath();
+          g.clip();
+          const bed = g.createLinearGradient(0, waterTop, 0, H);
+          bed.addColorStop(0, rgb(blend([0.125, 0.208, 0.22], [0.749, 0.785, 0.716], mode)));
+          bed.addColorStop(1, rgb(blend([0.041, 0.078, 0.096], [0.651, 0.717, 0.66], mode)));
+          g.fillStyle = bed;
+          g.fillRect(0, waterTop, W, wh);
+          const row = 1.75,
+            now = reduce.matches ? 0 : time;
+          for (let d = 0; d < wh; d += row) {
+            const t = clamp(d / wh),
+              sway =
+                (Math.sin(d * (0.47 - 0.17 * t) - now * 0.73) + 0.52 * Math.sin(d * 0.79 + now * 0.51)) *
+                (0.12 + 3.8 * t ** 0.85);
+            const opacity = mix(0.74, 0.065, t ** 0.76),
+              fade = t < 0.42 ? smooth((t - 0.015) / 0.405) : smooth((t - 0.42) / 0.53);
+            const a = t < 0.42 ? mirror.c : medium.c,
+              b = t < 0.42 ? medium.c : broad.c;
+            for (const [img, weight] of [
+              [a, 1 - fade],
+              [b, fade]
+            ]) {
+              if (weight < 0.008) continue;
+              const ry = img.height / wh;
+              g.globalAlpha = opacity * weight;
+              g.drawImage(img, 0, d * ry, img.width, Math.max(0.13, row * ry), sway, waterTop + d, W, row + 0.18);
+            }
+          }
+          g.globalAlpha = 1;
+          const waterPen = blend([0.84, 0.85, 0.73], [0.98, 0.95, 0.82], mode);
+          for (const [x0, t, len, a, b] of waterBrush) {
+            const first = anchor + (x0 - phase(0.85)) * scale,
+              y = shore + t * (H - shore),
+              period = PERIOD * scale;
+            for (let k = Math.ceil((-len - first) / period); k <= Math.floor((W - first) / period); k++) {
+              const x = first + k * period;
+              g.beginPath();
+              g.moveTo(x, y);
+              g.bezierCurveTo(x + 0.29 * len, y + Math.sin(b) * 0.55, x + 0.63 * len, y - 0.47, x + len, y + 0.13);
+              g.bezierCurveTo(x + 0.65 * len, y + 0.45, x + 0.34 * len, y + Math.sin(b) * 0.55 + 0.69, x, y);
+              g.fillStyle = rgb(waterPen, a);
+              g.fill();
+            }
+          }
+          for (const r of wakes) {
+            const age = clamp((time - r.time) / 0.88),
+              x = anchor + (r.x - camera * 0.85) * scale,
+              y = shore + r.y * (H - shore),
+              reach = (6 + 147 * (1 - (1 - age) ** 2)) * r.size;
+            g.beginPath();
+            g.moveTo(x - reach, y);
+            g.quadraticCurveTo(x, y - 3.7 * age - 1.9, x + reach, y);
+            g.quadraticCurveTo(x, y + 4.4 * age + 1.3, x - reach, y);
+            g.strokeStyle = rgb([1, 0.955, 0.8], 1 - age);
+            g.lineWidth = 0.8;
+            g.stroke();
+          }
+          g.restore();
+          g.beginPath();
+          spline(g, coast, true);
+          g.lineWidth = 0.74;
+          g.strokeStyle = rgb(blend([0.82, 0.84, 0.71], [0.982, 0.96, 0.87], mode), 0.75);
+          g.stroke();
+          g.save();
+          if (mode < 1) {
+            g.globalCompositeOperation = 'soft-light';
+            g.globalAlpha = 0.37 * (1 - mode);
+            g.fillStyle = soft.papers[0];
+            g.fillRect(0, 0, W, H);
+          }
+          if (mode > 0) {
+            g.globalCompositeOperation = 'multiply';
+            g.globalAlpha = 0.39 * mode;
+            g.fillStyle = soft.papers[1];
+            g.fillRect(0, 0, W, H);
+          }
+          g.restore();
+        }
+
+        let lastPrint = -10,
+          wasLit = false;
+        function tick(ms) {
+          frame = 0;
+          if (lost || document.hidden) return;
+          const time = ms / 1000,
+            dt = previous ? clamp(time - previous, 0, 0.06) : 1 / 60;
+          previous = time;
+          if (lastDpr !== (window.devicePixelRatio || 1) || canvas.clientWidth !== W || canvas.clientHeight !== H)
+            resize();
+          if (!W || !H) {
+            frame = requestAnimationFrame(tick);
+            return;
+          }
+          const lastCam = camera,
+            oldYaw = yaw,
+            oldMode = mode;
+          mode = mix(modeFrom, modeGoal, smooth((time - modeStart) / (reduce.matches ? 0.14 : 0.78)));
+          camera = mix(camera, destination, 1 - Math.exp(-dt * (drag ? 38 : 17)));
+          if (Math.abs(camera - destination) < 0.006) camera = destination;
+          if (camera !== lastCam) frameLandscape();
+          const aim =
+            0.14 * Math.sin((camera / PERIOD) * TAU * 0.4) + clamp((destination - camera) * 0.0033, -0.24, 0.24);
+          yaw = mix(yaw, aim, 1 - Math.exp(-dt * 8));
+          if (Math.abs(aim - yaw) < 0.0003) yaw = aim;
+          waves = waves.filter((e) => time - e.time < 1.5);
+          wakes = wakes.filter((e) => time - e.time < 0.88);
+          if (!waves.length) bloomButton.classList.remove('lit');
+          const touch = 1 - smooth((time - hover.time - 0.035) / 0.57);
+          const hasLight = !!(touch || waves.length);
+          const movingInk = lastCam !== camera || oldYaw !== yaw || oldMode !== mode || hasLight || wasLit;
+          const repaint = dirty || movingInk || (!reduce.matches && time - lastPrint > 0.045);
+          if (repaint) lastPrint = time;
+          wasLit = hasLight;
+          if (gpu) drawGPU(time, touch, repaint);
+          else drawSoft(time, touch, repaint);
+          dirty = false;
+          frame = requestAnimationFrame(tick);
+        }
+        function start() {
+          if (!frame && !lost && !document.hidden) {
+            previous = 0;
+            frame = requestAnimationFrame(tick);
+          }
+        }
+        themeButton.addEventListener('click', () => {
+          modeFrom = mode;
+          modeGoal = 1 - modeGoal;
+          modeStart = clock();
+          document.documentElement.classList.toggle('silk', !!modeGoal);
+          themeButton.setAttribute('aria-pressed', String(!!modeGoal));
+          themeButton.querySelectorAll('b').forEach((b, i) => b.classList.toggle('selected', i === modeGoal));
+          document.querySelector('meta[name=theme-color]').content = stockColors[modeGoal][8];
+          dirty = true;
+        });
+        function bloomAtRidge() {
+          const m = mountains[1],
+            x = W * 0.63,
+            h = ridgeSample(m.sky, phase(m.rate) + (x - anchor) / scale);
+          release(x, shore - h * scale);
+        }
+        bloomButton.addEventListener('click', bloomAtRidge);
+        function bindCanvas() {
+          canvas.addEventListener('pointerdown', (e) => {
+            if (!e.isPrimary || e.button !== 0) return;
+            canvas.focus({ preventScroll: true });
+            canvas.setPointerCapture(e.pointerId);
+            drag = {
+              id: e.pointerId,
+              x: e.clientX,
+              y: e.clientY,
+              last: e.clientX,
+              lastTime: clock(),
+              velocity: 0,
+              moved: false
+            };
+            destination = camera;
+          });
+          canvas.addEventListener('pointermove', (e) => {
+            if (!e.isPrimary) return;
+            const time = clock(),
+              x = e.clientX,
+              y = e.clientY;
+            if (drag && drag.id === e.pointerId) {
+              if (!drag.moved && Math.hypot(x - drag.x, y - drag.y) > 4) {
+                drag.moved = true;
+                canvas.classList.add('grabbed');
+              }
+              if (drag.moved) {
+                const dx = x - drag.last,
+                  dt = Math.max(0.01, time - drag.lastTime);
+                destination -= dx / scale;
+                drag.velocity = mix(drag.velocity, -dx / (scale * dt), 0.56);
+                drag.last = x;
+                drag.lastTime = time;
+                if (y > bankAt(x)) wake(x, y, time);
+                return;
+              }
+            }
+            brush(x, y, time);
+          });
+          function endDrag(e, cancel) {
+            if (!drag || e.pointerId !== drag.id) return;
+            const ended = drag;
+            drag = null;
+            canvas.classList.remove('grabbed');
+            if (canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
+            if (cancel) return;
+            if (!ended.moved) {
+              release(e.clientX, e.clientY);
+              if (e.clientY > bankAt(e.clientX)) wake(e.clientX, e.clientY, clock());
+            } else if (!reduce.matches && clock() - ended.lastTime < 0.09)
+              destination += clamp(ended.velocity, -1650, 1650) * 0.115;
+          }
+          canvas.addEventListener('pointerup', (e) => endDrag(e, false));
+          canvas.addEventListener('pointercancel', (e) => endDrag(e, true));
+          canvas.addEventListener('lostpointercapture', (e) => endDrag(e, true));
+          canvas.addEventListener(
+            'wheel',
+            (e) => {
+              if (e.ctrlKey) return;
+              e.preventDefault();
+              const step = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? W : 1;
+              const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+              destination += (d * step) / scale;
+            },
+            { passive: false }
+          );
+          canvas.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+              e.preventDefault();
+              destination += ((e.key === 'ArrowLeft' ? -1 : 1) * W * 0.12) / scale;
+            }
+            if (e.key === ' ' || e.key === 'Enter') {
+              e.preventDefault();
+              if (!e.repeat) bloomAtRidge();
+            }
+          });
+          canvas.addEventListener('webglcontextlost', (e) => {
+            e.preventDefault();
+            lost = true;
+            cancelAnimationFrame(frame);
+            frame = 0;
+          });
+          canvas.addEventListener('webglcontextrestored', () => {
+            initializeRenderer();
+            if (!gpu) bindCanvas();
+            lost = false;
+            resize();
+            start();
+          });
+        }
+        function initializeRenderer() {
+          if (gl) {
+            try {
+              initGPU();
+              return;
+            } catch (error) {
+              console.info(error.message);
+              const replacement = canvas.cloneNode(true);
+              canvas.replaceWith(replacement);
+              canvas = replacement;
+              gl = null;
+              gpu = null;
+            }
+          }
+          initSoft();
+        }
+        document.addEventListener('visibilitychange', () => {
+          if (document.hidden) {
+            cancelAnimationFrame(frame);
+            frame = 0;
+          } else {
+            dirty = true;
+            start();
+          }
+        });
+        document.fonts?.ready.then(fitSignature);
+        initializeRenderer();
+        bindCanvas();
+        resize();
+        start();
+      })();
+    </script>
+  </body>
+</html>
