@@ -288,7 +288,7 @@
             <b class="selected">素绢</b>
           </span>
         </button>
-        <button id="bloom" type="button" title="沿山脊释放流彩" aria-label="山势流彩">
+        <button id="bloom" type="button" title="沿山脊铺开春彩，停驻后渐隐" aria-label="山势流彩">
           <svg viewBox="0 0 22 22" aria-hidden="true">
             <path
               d="M2.3 14.7c3.5-.5 4.2-6.6 7-6.1 1.4.3 1.7 2.1 2.9 1.6 1.7-.7 2.6-6.6 4.4-6.1 1.1.4.4 4.3 3.3 5.3M3.7 17.2c4.9-2.2 8.5 1.8 14.8-.5"
@@ -1893,7 +1893,6 @@ vec3 skyAt(vec2 p){
 uniform vec3 uArcs,uHover,uRows;
 uniform vec3 uPlate;
 uniform vec4 uWaveA[3],uWaveB[3];
-uniform float uTravel;
 vec4 lookup(float x,float row){return texture2D(uTable,vec2(fract(x)+.5/2048.,(row+.5)/8.));}
 float number(vec2 rg){return dot(rg,vec2(65280.,255.));}
 vec2 ridge(float x,float row,float length){
@@ -1912,12 +1911,15 @@ vec3 laySilk(vec3 c,float x,float h,float row,float aa){
   vec3 silk=mix(vec3(.67,.741,.701),vec3(.977,.943,.850),uMode);
   return mix(c,silk,cloud(x,h,row,aa));
 }
-float pulse(vec4 event,vec2 along,float extent){
-  float age=event.z-event.w;if(age<0.||event.z>=1.5)return 0.;
-  float delta=abs(event.x-along.x);delta=min(delta,extent-delta);
-  float down=mix(abs(along.y-event.y),along.y+event.y,smoothstep(0.,68.,delta));
-  float lag=age-(delta+down)*uTravel;
-  return smoothstep(-.012,.020,lag)*(1.-smoothstep(.038,.205,lag))*(1.-smoothstep(1.12,1.5,event.z));
+float ridgeBand(vec4 band,vec2 along,float extent){
+  if(band.w<=0.)return 0.;
+  float arc=abs(band.x-along.x);
+  arc=min(arc,extent-arc);
+  float tip=smoothstep(0.,14.,(band.z-arc)*uView.z);
+  float center=band.y*(1.-smoothstep(0.,160.,arc*uView.z));
+  float width=clamp(uView.y*.027,10.,21.);
+  float crossSlope=abs(along.y-center)*uView.z;
+  return band.w*tip*(1.-smoothstep(width*.15,width,crossSlope));
 }
 vec4 painted(vec2 p){
   if(uMode<=.0001)return texture2D(uNight,p);
@@ -1928,8 +1930,8 @@ vec3 place(vec3 under,float x,float h,vec2 crest,float k,float row,float extent,
   if(h>crest.x+1.1/uRatio/uView.z||h<-.5)return under;
   float travel=max(0.,crest.x-h);
   float touch=(1.-smoothstep(4.,120.,length(pixel-uHover.xy)))*uHover.z;
-  float wave=max(pulse(ea,vec2(crest.y,travel),extent),pulse(eb,vec2(crest.y,travel),extent));
-  float flow=max(touch*.85,wave*.44);
+  float wave=max(ridgeBand(ea,vec2(crest.y,travel),extent),ridgeBand(eb,vec2(crest.y,travel),extent));
+  float flow=touch*.85;
   // 使用两侧出血的预乘画层。墨骨则以一次烘焙的距离、压力、余墨量三个量合成。
   vec2 uv0=vec2((1.+x*(uPlate.x-2.))/uPlate.x,(row+1.+max(0.,h)*uPlate.y)/uPlate.z);
   vec4 fixedInk=painted(uv0);
@@ -1948,7 +1950,8 @@ vec3 place(vec3 under,float x,float h,vec2 crest,float k,float row,float extent,
   vec3 bone=mix(vec3(.103,.112,.145),vec3(.147,.142,.168),uMode);
   c=mix(c,bone,line*(k<.5?.56:.79));
   float lum=dot(c,vec3(.22,.65,.13));
-  c=mix(vec3(lum),c,1.+wave*.72+touch*.21)+max(wave,touch*.63)*vec3(.068,.052,.033);
+  c=mix(vec3(lum),c,1.+wave*.90+touch*.21)+touch*.63*vec3(.068,.052,.033);
+  c+=(1.-clamp(c,0.,1.))*wave*vec3(.28,.24,.18);
   float edge=(1.-smoothstep(.08,1.15,travel*uView.z))*(.42+.43*smoothstep(-.2,.86,nx));
   c=mix(c,vec3(.947,.882,.720),max(wave,touch)*max(line,edge)*.96);
   return under*(1.-fixedInk.a)+c*fixedInk.a;
@@ -2177,7 +2180,7 @@ void main(){
             hitH
           ];
         }
-        const secondsPerUnit = () => scale / Math.max(565, W * 0.94);
+        const bloomGrow = 0.4, bloomFadeAt = 0.85, bloomEnd = 1.5;
         function release(x, y) {
           const time = clock(),
             bank = bankAt(x),
@@ -2189,8 +2192,8 @@ void main(){
           const source = guesses[hit],
             starts = mountains.map((m) => (m.k === hit ? source : nearest(m, source[3], source[4])));
           source[2] = 0;
-          waves = waves.filter((w) => time - w.time < 1.5).slice(-1);
-          waves.push({ time, starts });
+          waves = waves.filter((w) => time - w.time < bloomEnd).slice(-1);
+          waves.push({ time, starts, reach: clamp(W * 0.22, 80, 340) / scale });
           bloomButton.classList.add('lit');
         }
         function wake(x, y, t) {
@@ -2262,7 +2265,7 @@ void main(){
           if (limit < 2048) throw Error('Texture capacity');
           const art = program(
             landscapeSource,
-            'uNight uDay uInk uTable uArcs uHover uWaveA uWaveB uTravel uRows uPlate'
+            'uNight uDay uInk uTable uArcs uHover uWaveA uWaveB uRows uPlate'
           );
           const river = program(riverSource, 'uLand uSilvery uSoft uGrain uWake uHeight');
           const soften = program(softenSource, 'uSource uFootprint');
@@ -2385,9 +2388,30 @@ void main(){
           if (soft) resizeSoft();
           dirty = true;
         }
-        const waveA = new Float32Array(12),
-          waveB = new Float32Array(12),
-          wakeData = new Float32Array(16);
+        const bloomBands = [new Float32Array(12), new Float32Array(12)];
+        const wakeData = new Float32Array(16);
+        // 两条渲染路径共用这段时序。染到的部位一直保留，待整段停驻后才开始收色。
+        function updateBloomBands(time) {
+          for (let i = 0; i < bloomBands.length; i++) {
+            const band = bloomBands[i], event = waves[i];
+            if (!event) {
+              band.fill(0);
+              continue;
+            }
+            const age = time - event.time;
+            const fade = 1 - smooth((age - bloomFadeAt) / (bloomEnd - bloomFadeAt));
+            for (const m of mountains) {
+              const [arc, depth, distance] = event.starts[m.k];
+              const separation = clamp(distance / event.reach);
+              const elapsed = age - 0.08 * separation;
+              const offset = 4 * m.k;
+              band[offset] = arc;
+              band[offset + 1] = depth;
+              band[offset + 2] = Math.min(event.reach, m.arcLength * 0.34) * smooth(elapsed / bloomGrow);
+              band[offset + 3] = smooth(elapsed / 0.10) * (1 - smooth(separation)) * fade;
+            }
+          }
+        }
         function uniforms(pipe, time) {
           const u = pipe.u;
           gl.useProgram(pipe.prog);
@@ -2416,20 +2440,9 @@ void main(){
             gl.bindFramebuffer(gl.FRAMEBUFFER, target);
             gl.viewport(0, 0, canvas.width, Math.round((bandBottom - bandTop) * ratio));
             uniforms(art, time);
-            for (let j = 0; j < 2; j++)
-              for (let k = 0; k < 3; k++) {
-                const e = waves[j],
-                  d = j ? waveB : waveA,
-                  o = k * 4;
-                d[o] = e ? e.starts[k][0] : 0;
-                d[o + 1] = e ? e.starts[k][1] : 0;
-                d[o + 2] = e ? time - e.time : -3;
-                d[o + 3] = e ? e.starts[k][2] * secondsPerUnit() : 0;
-              }
-            gl.uniform4fv(art.u.uWaveA, waveA);
-            gl.uniform4fv(art.u.uWaveB, waveB);
+            gl.uniform4fv(art.u.uWaveA, bloomBands[0]);
+            gl.uniform4fv(art.u.uWaveB, bloomBands[1]);
             gl.uniform3f(art.u.uHover, hover.x, hover.y, touch);
-            gl.uniform1f(art.u.uTravel, secondsPerUnit());
             gl.drawArrays(gl.TRIANGLES, 0, 3);
             gl.disableVertexAttribArray(art.a);
             const blit = gpu.soften;
@@ -2500,10 +2513,13 @@ void main(){
               imprint.data[o + 1] = 43;
               imprint.data[o + 2] = 53;
               imprint.data[o + 3] = 255 * coverage * (m.k === 0 ? 0.57 : 0.77);
-              light.data[o] = mix(matte[o], 239, 0.42 + coverage * 0.48);
-              light.data[o + 1] = mix(matte[o + 1], 223, 0.42 + coverage * 0.48);
-              light.data[o + 2] = mix(matte[o + 2], 185, 0.42 + coverage * 0.48);
-              light.data[o + 3] = 255 * a * (0.27 + 0.72 * coverage);
+              const luma = matte[o] * 0.22 + matte[o + 1] * 0.65 + matte[o + 2] * 0.13;
+              for (let ch = 0; ch < 3; ch++) {
+                const pigment = mix(luma, matte[o + ch], 1.9);
+                const bright = mix(pigment, 255, [0.28, 0.24, 0.18][ch]);
+                light.data[o + ch] = mix(bright, [241, 225, 184][ch], coverage * 0.96);
+              }
+              light.data[o + 3] = 255 * a * (0.76 + 0.24 * coverage);
             }
           layer.g.putImageData(imprint, 0, 0);
           lift.g.putImageData(light, 0, 0);
@@ -2661,7 +2677,7 @@ void main(){
               }
             }
             if (touch || waves.length) {
-              softwareGlow(m, time, touch);
+              softwareGlow(m, touch);
               for (const g of targets) g.drawImage(soft.glow.c, 0, bandTop, W, bandBottom - bandTop);
             }
           }
@@ -2676,7 +2692,7 @@ void main(){
           g.fillRect(0, shore - 0.5 * scale, W, 6 * scale);
         }
 
-        function softwareGlow(m, time, touch) {
+        function softwareGlow(m, touch) {
           if (!touch && !waves.length) return;
           const fx = soft.glow,
             mask = soft.mask,
@@ -2686,8 +2702,8 @@ void main(){
           const im = mask.image,
             src = phase(m.rate);
           im.data.fill(0);
-          const speed = secondsPerUnit(),
-            pixelH = bh / h;
+          const pixelH = bh / h, offset = 4 * m.k;
+          const width = clamp(shore * 0.027, 10, 21);
           for (let i = 0; i < w; i++) {
             const x = ((i + 0.5) / w) * W,
               dx = x - hover.x;
@@ -2695,19 +2711,17 @@ void main(){
             const world = src + (x - anchor) / scale,
               top = ridgeSample(m.sky, world),
               arc = arcAt(m, world);
-            const signals = waves.map((e) => {
-              const pos = e.starts[m.k],
-                diff = Math.abs(arc - pos[0]),
-                walk = Math.min(diff, m.arcLength - diff),
-                age = time - e.time;
-              return [
-                age - (walk + pos[2]) * speed,
-                pos[1],
-                smooth(walk / 68),
-                1 - smooth((age - 1.12) / 0.38),
-                age >= pos[2] * speed
-              ];
-            });
+            const signals = [];
+            for (const band of bloomBands) {
+              if (band[offset + 3] <= 0) continue;
+              const delta = Math.abs(arc - band[offset]);
+              const walk = Math.min(delta, m.arcLength - delta);
+              if (walk >= band[offset + 2]) continue;
+              const tip = smooth(((band[offset + 2] - walk) * scale) / 14);
+              const center = band[offset + 1] * (1 - smooth((walk * scale) / 160));
+              signals.push({ center, light: tip * band[offset + 3] });
+            }
+            if (!signals.length && !(touch && Math.abs(dx) < 120)) continue;
             for (let j = Math.max(0, Math.floor((shore - scale * (top + 3) - bandTop) / pixelH)); j < h; j++) {
               const y = bandTop + (j + 0.5) * pixelH,
                 alt = (shore - y) / scale;
@@ -2715,10 +2729,9 @@ void main(){
               let value =
                 touch && Math.abs(dx) < 120 ? touch * (1 - smooth((Math.hypot(dx, y - hover.y) - 4) / 116)) : 0;
               const leg = Math.max(0, top - alt);
-              for (const v of signals) {
-                if (!v[4]) continue;
-                const lag = v[0] - mix(Math.abs(leg - v[1]), leg + v[1], v[2]) * speed;
-                value = Math.max(value, smooth((lag + 0.012) / 0.032) * (1 - smooth((lag - 0.038) / 0.167)) * v[3]);
+              for (const signal of signals) {
+                const crossSlope = Math.abs(leg - signal.center) * scale;
+                value = Math.max(value, signal.light * (1 - smooth((crossSlope - width * 0.15) / (width * 0.85))));
               }
               im.data[(j * w + i) * 4 + 3] = 255 * value;
             }
@@ -2900,7 +2913,8 @@ void main(){
             0.14 * Math.sin((camera / PERIOD) * TAU * 0.4) + clamp((destination - camera) * 0.0033, -0.24, 0.24);
           yaw = mix(yaw, aim, 1 - Math.exp(-dt * 8));
           if (Math.abs(aim - yaw) < 0.0003) yaw = aim;
-          waves = waves.filter((e) => time - e.time < 1.5);
+          waves = waves.filter((e) => time - e.time < bloomEnd);
+          if (waves.length || wasLit) updateBloomBands(time);
           wakes = wakes.filter((e) => time - e.time < 0.88);
           if (!waves.length) bloomButton.classList.remove('lit');
           const touch = 1 - smooth((time - hover.time - 0.035) / 0.57);
